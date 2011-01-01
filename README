@@ -1,16 +1,38 @@
 Device-Blkid-E2fsprogs version 0.01
 ===================================
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
-
-A README file is required for CPAN modules since CPAN extracts the
-README file from a module distribution so that people browsing the
-archive can use it get an idea of the modules uses. It is usually a
-good idea to provide version information here so that people can
-decide whether fixes for the module are worth downloading.
+NOTE: This library only exposes the older e2fsprogs versions of libblkid ( pre-2.15 ) and                                                                                                                                                  
+      not the newer and preferred util-linux-ng versions ( v2.15 or better ). In almost                                                                                                                                                    
+      every case you would be advised to use Friedrich Bastion's util-linux-ng based                                                                                                                                                       
+      L<Device::Blkid> module as the newer lib interface is backward compatible with the old                                                                                                                                               
+      one. This module would prove useful in any situation where for any reason you are                                                                                                                                                    
+      limited on your systems to a pre-2.15 libblkid version which is a part of the e2fsprogs                                                                                                                                              
+      package. Incidentally, libblkid version numbering is based upon the version of either                                                                                                                                                
+      util-linux-ng or e2fsprogs of which it was a part and as such, e2fsprogs based versions                                                                                                                                              
+      of the library were numbered v1.xx whereas util-linux-ng versions are numbered as v2.15                                                                                                                                              
+      or better which was the version of util-linux-ng in which it was added to that package.                                                                                                                                              
+      Finally, if you are under constraints which limit your selection of which library to use,                                                                                                                                            
+      I urge you to grab Friedrich's package L<Device::Blkid> as it supported a newer and                                                                                                                                                  
+      larger libblkid API.                                                                                                                                                                                                                 
+                                                                                                                                                                                                                                           
+This package provides a Perl interface to libblkid as it was a part of the e2fsprogs package. It                                                                                                                                           
+does not support the larger and more robust API which has been added and integrated into the                                                                                                                                               
+libblkid library since the library was added to the util-linux-ng package. See the preceding                                                                                                                                               
+note for complete details.                                                                                                                                                                                                                 
+                                                                                                                                                                                                                                           
+Libblkid provides a simple way to access and evaluate LABEL and UUID tags which can be associated                                                                                                                                          
+with block devices. The tags are now becoming commonplace block device and volume aliases in more                                                                                                                                          
+modern distributions of Linux. This Perl interface exposes the various and sundry functionality                                                                                                                                            
+exposed by the libblkid system library to the Perl programmer.                                                                                                                                                                             
+                                                                                                                                                                                                                                           
+Recognizing that this is a Perl module, I have tried to provide a more 'Perlish' interface                                                                                                                                                 
+where possible rather than merely map Perl subs to C functions. For example, while client code                                                                                                                                             
+can get a Perl object reference to the underlying C structures, they are at no time able to                                                                                                                                                
+manipulate structure members. This decision was made as I could not conceive of any legitimate                                                                                                                                             
+reasons for allowing for such access. Also, where possible and relevant, I have endeavored to                                                                                                                                              
+return Perl-style eval-based exceptions when exceptional conditions occur inside of the underlying                                                                                                                                         
+C functions. The exceptions are all string style, no objects are passed. See the L</"SYNOPSIS"> above                                                                                                                                      
+for further details.
 
 INSTALLATION
 
@@ -23,18 +45,42 @@ To install this module type the following:
 
 DEPENDENCIES
 
-This module requires these other modules and libraries:
+Perl 5.10.0
 
-  blah blah blah
+This module also requires these other modules and libraries:
 
+  e2fsprogs (pre v1.44)
+
+DEBUGGING and REPORTING A BUG
+
+If you have any problems with the functioning of this library, please contact me at my CPAN
+address at mroz@cpan.org. Please be sure and include a list of packages installed on your system
+or at least the exact version of e2fsprogs which you have installed. Also, please build and
+install a DEBU build of this library as detailed below, execute the application which is using
+this package and failing, and send me the verbose debugging output from the DEBUG build of this
+package.
+
+Should you wish to build a debug build of this library, please edit the Makefile.PL file and
+set the __DEBUG DEFINE flag as is shown in the file. After setting, rebuild the library as per
+The INSTALLATION instructions above. The debug build will produce much more verbose and chatty
+output to STDOUT detailing what is talking place in the underlying C codes. Please be sure and
+include all of this verbose output along with any problems you are having with this package. If
+you find any problems with this package and wish to submit a patch, please send the unified diff
+to my CPAN address including full patch instructions as well as a description of what issue or
+bug you have found and addressed. Please patch as per recommended best practices found in the
+patch(1) man page, under "NOTES FOR PATCH SENDERS".
+  
 COPYRIGHT AND LICENCE
 
-Put the correct copyright and licence information here.
-
-Copyright (C) 2011 by Raymond Mroz
+Copyright (C) 2010 by Raymond Mroz
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.1 or,
 at your option, any later version of Perl 5 you may have available.
 
+BUGS
 
+No known bugs at this time. That said, this module is largely written in C and does contain
+a number of memory allocations. While these allocations are done inside of the libblkid itself,
+I do make every attempt to free the memory explicitly when I am done with it. That said, leaks
+are possible. Report any issues as is detailed above.
