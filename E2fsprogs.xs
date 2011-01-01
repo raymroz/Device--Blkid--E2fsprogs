@@ -61,7 +61,7 @@ char *_blkid_evaluate_tag(const char *token, const char *value, Cache cache)
     return device;
 }
 
-MODULE = Device::Blkid::E2fsprogs    PACKAGE = E2fsprogs        PREFIX = _blkid_
+MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs        PREFIX = _blkid_
 
 PROTOTYPES: DISABLE
     
@@ -75,7 +75,7 @@ char *_blkid_evaluate_tag(token, value, cache)
                        Cache          cache
 
 
-MODULE = Device::Blkid::E2fsprogs    PACKAGE = Cache            PREFIX = _blkid_
+MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::Cache            PREFIX = _blkid_
 
 void _blkid_DESTROY(cache)
                        Cache          cache
