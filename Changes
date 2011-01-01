@@ -1,0 +1,6 @@
+Revision history for Perl extension Device::Blkid::E2fsprogs.
+
+0.01  Sat Jan  1 11:35:09 2011
+	- original version; created by h2xs 1.23 with options
+		-A -n Device::Blkid::E2fsprogs
+

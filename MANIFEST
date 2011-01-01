@@ -1,0 +1,8 @@
+Changes
+E2fsprogs.xs
+Makefile.PL
+MANIFEST
+ppport.h
+README
+t/Device-Blkid-E2fsprogs.t
+lib/Device/Blkid/E2fsprogs.pm
