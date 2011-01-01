@@ -1,37 +1,37 @@
 Device-Blkid-E2fsprogs version 0.01
 ===================================
 
-NOTE: This library only exposes the older e2fsprogs versions of libblkid ( pre-2.15 ) and                                                                                                                                                  
-      not the newer and preferred util-linux-ng versions ( v2.15 or better ). In almost                                                                                                                                                    
-      every case you would be advised to use Friedrich Bastion's util-linux-ng based                                                                                                                                                       
-      L<Device::Blkid> module as the newer lib interface is backward compatible with the old                                                                                                                                               
-      one. This module would prove useful in any situation where for any reason you are                                                                                                                                                    
-      limited on your systems to a pre-2.15 libblkid version which is a part of the e2fsprogs                                                                                                                                              
-      package. Incidentally, libblkid version numbering is based upon the version of either                                                                                                                                                
-      util-linux-ng or e2fsprogs of which it was a part and as such, e2fsprogs based versions                                                                                                                                              
-      of the library were numbered v1.xx whereas util-linux-ng versions are numbered as v2.15                                                                                                                                              
-      or better which was the version of util-linux-ng in which it was added to that package.                                                                                                                                              
-      Finally, if you are under constraints which limit your selection of which library to use,                                                                                                                                            
-      I urge you to grab Friedrich's package L<Device::Blkid> as it supported a newer and                                                                                                                                                  
-      larger libblkid API.                                                                                                                                                                                                                 
-                                                                                                                                                                                                                                           
-This package provides a Perl interface to libblkid as it was a part of the e2fsprogs package. It                                                                                                                                           
-does not support the larger and more robust API which has been added and integrated into the                                                                                                                                               
-libblkid library since the library was added to the util-linux-ng package. See the preceding                                                                                                                                               
-note for complete details.                                                                                                                                                                                                                 
-                                                                                                                                                                                                                                           
-Libblkid provides a simple way to access and evaluate LABEL and UUID tags which can be associated                                                                                                                                          
-with block devices. The tags are now becoming commonplace block device and volume aliases in more                                                                                                                                          
-modern distributions of Linux. This Perl interface exposes the various and sundry functionality                                                                                                                                            
-exposed by the libblkid system library to the Perl programmer.                                                                                                                                                                             
-                                                                                                                                                                                                                                           
-Recognizing that this is a Perl module, I have tried to provide a more 'Perlish' interface                                                                                                                                                 
-where possible rather than merely map Perl subs to C functions. For example, while client code                                                                                                                                             
-can get a Perl object reference to the underlying C structures, they are at no time able to                                                                                                                                                
-manipulate structure members. This decision was made as I could not conceive of any legitimate                                                                                                                                             
-reasons for allowing for such access. Also, where possible and relevant, I have endeavored to                                                                                                                                              
-return Perl-style eval-based exceptions when exceptional conditions occur inside of the underlying                                                                                                                                         
-C functions. The exceptions are all string style, no objects are passed. See the L</"SYNOPSIS"> above                                                                                                                                      
+NOTE: This library only exposes the older e2fsprogs versions of libblkid ( pre-2.15 ) and
+      not the newer and preferred util-linux-ng versions ( v2.15 or better ). In almost
+      every case you would be advised to use Friedrich Bastion's util-linux-ng based
+      L<Device::Blkid> module as the newer lib interface is backward compatible with the old
+      one. This module would prove useful in any situation where for any reason you are
+      limited on your systems to a pre-2.15 libblkid version which is a part of the e2fsprogs
+      package. Incidentally, libblkid version numbering is based upon the version of either
+      util-linux-ng or e2fsprogs of which it was a part and as such, e2fsprogs based versions
+      of the library were numbered v1.xx whereas util-linux-ng versions are numbered as v2.15
+      or better which was the version of util-linux-ng in which it was added to that package.
+      Finally, if you are under constraints which limit your selection of which library to use,
+      I urge you to grab Friedrich's package L<Device::Blkid> as it supported a newer and
+      larger libblkid API.
+
+This package provides a Perl interface to libblkid as it was a part of the e2fsprogs package. It
+does not support the larger and more robust API which has been added and integrated into the
+libblkid library since the library was added to the util-linux-ng package. See the preceding
+note for complete details.
+
+Libblkid provides a simple way to access and evaluate LABEL and UUID tags which can be associated
+with block devices. The tags are now becoming commonplace block device and volume aliases in more
+modern distributions of Linux. This Perl interface exposes the various and sundry functionality
+exposed by the libblkid system library to the Perl programmer.
+
+Recognizing that this is a Perl module, I have tried to provide a more 'Perlish' interface
+where possible rather than merely map Perl subs to C functions. For example, while client code
+can get a Perl object reference to the underlying C structures, they are at no time able to
+manipulate structure members. This decision was made as I could not conceive of any legitimate
+reasons for allowing for such access. Also, where possible and relevant, I have endeavored to
+return Perl-style eval-based exceptions when exceptional conditions occur inside of the underlying
+C functions. The exceptions are all string style, no objects are passed. See the L</"SYNOPSIS"> above
 for further details.
 
 INSTALLATION
