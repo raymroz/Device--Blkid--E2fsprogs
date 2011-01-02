@@ -10,6 +10,17 @@
 
 typedef struct blkid_struct_cache *Cache;
 
+/* extern void blkid_put_cache(blkid_cache cache) */
+
+void _blkid_put_cache(Cache cache)
+{
+    //TODO: sort this routine out
+    #ifdef __DEBUG
+    printf("    DEBUG: _blkid_put_cache()\n");
+    #endif
+
+    blkid_put_cache(cache);
+}
 
 /* extern int blkid_get_cache(blkid_cache cache) */
 
@@ -64,7 +75,10 @@ char *_blkid_evaluate_tag(const char *token, const char *value, Cache cache)
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs        PREFIX = _blkid_
 
 PROTOTYPES: DISABLE
-    
+
+void _blkid_put_cache(cache)
+                       Cache          cache
+
 Cache _blkid_get_cache(filename)
                        const char *   filename 
 

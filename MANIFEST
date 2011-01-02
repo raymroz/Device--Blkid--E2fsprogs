@@ -4,5 +4,7 @@ Makefile.PL
 MANIFEST
 ppport.h
 README
-t/Device-Blkid-E2fsprogs.t
+t/00-load.t
+t/01-blkid_cache.t
 lib/Device/Blkid/E2fsprogs.pm
+typemap

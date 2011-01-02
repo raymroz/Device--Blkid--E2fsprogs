@@ -20,10 +20,10 @@ does not support the larger and more robust API which has been added and integra
 libblkid library since the library was added to the util-linux-ng package. See the preceding
 note for complete details.
 
-Libblkid provides a simple way to access and evaluate LABEL and UUID tags which can be associated
-with block devices. The tags are now becoming commonplace block device and volume aliases in more
-modern distributions of Linux. This Perl interface exposes the various and sundry functionality
-exposed by the libblkid system library to the Perl programmer.
+Libblkid provides a simple way to access and evaluate basic topology of system block devices.
+This new topology support is now becoming quite commonplace in partioning tools and other related
+utilities found in most modern distributions. This Perl interface exposes the various and sundry
+functionality made available by the libblkid system library to the Perl programmer.
 
 Recognizing that this is a Perl module, I have tried to provide a more 'Perlish' interface
 where possible rather than merely map Perl subs to C functions. For example, while client code
