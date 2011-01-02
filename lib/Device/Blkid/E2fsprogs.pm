@@ -1,6 +1,6 @@
 package Device::Blkid::E2fsprogs;
 
-use 5.010000;
+use 5.008000;
 use strict;
 use warnings;
 

@@ -9,21 +9,26 @@
 #include "ppport.h"
 
 typedef struct blkid_struct_cache *Cache;
+typedef struct blkid_struct_dev *Device;
+
+/*********************************
+ * cache.c
+ *
+ *********************************/
 
 /* extern void blkid_put_cache(blkid_cache cache) */
-
 void _blkid_put_cache(Cache cache)
 {
     //TODO: sort this routine out
     #ifdef __DEBUG
     printf("    DEBUG: _blkid_put_cache()\n");
+    printf("    DEBUG: arg(1): Cache struct address: %p\n", cache);
     #endif
 
     blkid_put_cache(cache);
 }
 
 /* extern int blkid_get_cache(blkid_cache cache) */
-
 Cache _blkid_get_cache(const char *filename)
 {
     #ifdef __DEBUG
@@ -46,13 +51,40 @@ Cache _blkid_get_cache(const char *filename)
     return cache;
 }
 
-/* extern char *blkid_get_devname(blkid_cache cache, const char *token, const char *value) */
+/*********************************
+ * dev.c
+ *
+ *********************************/
 
+/* extern const char *blkid_dev_devname(blkid_dev dev) */
+const char *_blkid_dev_devname(Device dev)
+{
+    #ifdef __DEBUG
+    printf("    DEBUG: _blkid_dev_devname()\n");
+    printf("    DEBUG: arg(1): Device struct address: %p\n", dev);
+    #endif
+
+    const char *device = NULL;
+
+    device = blkid_dev_devname(dev);
+    if (device = NULL)
+    {
+        #ifdef __DEBUG
+        printf("    DEBUG: _blkid_dev_devname()::blkid_dev_devname()\n");
+        printf("    DEBUG: Error occured while getting device name: %s\n", strerror(errno));
+        #endif
+        croak("Error occured while getting device name: %s\n", strerror(errno));
+    }
+
+    return device;
+}
+
+/* extern char *blkid_get_devname(blkid_cache cache, const char *token, const char *value) */
 char *_blkid_evaluate_tag(const char *token, const char *value, Cache cache)
 {
     #ifdef __DEBUG
     printf("    DEBUG: _blkid_evaluate_tag()\n");
-    printf("    DEBUG: args(3) token:%s, value:%s, cache:%p\n", token, value, cache);
+    printf("    DEBUG: Args(3) token:%s, value:%s, cache address:%p\n", token, value, cache);
     assert(token);
     assert(value);
     #endif
@@ -76,13 +108,18 @@ MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs        P
 
 PROTOTYPES: DISABLE
 
+### cache.c
 void _blkid_put_cache(cache)
                        Cache          cache
 
 Cache _blkid_get_cache(filename)
                        const char *   filename 
 
-    
+### dev.c
+const char *_blkid_dev_devname(dev)
+                       Device         dev
+
+### tag.c
 char *_blkid_evaluate_tag(token, value, cache)
                        const char *   token
                        const char *   value
