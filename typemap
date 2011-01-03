@@ -1,12 +1,12 @@
 #########
 # TYPEMAP
 const char *    T_PV
-__s64           T_IV
+blkid_loff_t    T_IV
 dev_t           T_U_LONG
 Cache           T_PTROBJ
 Device          T_PTROBJ
-Dev_Iterate     T_PTROBJ
-Tag_Iterate     T_PTROBJ
+DevIter         T_PTROBJ
+TagIter         T_PTROBJ
 
 #######
 # INPUT
