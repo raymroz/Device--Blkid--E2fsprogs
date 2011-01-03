@@ -1,8 +1,13 @@
+#########
 # TYPEMAP
 const char *    T_PV
+__s64           T_IV
+dev_t           T_U_LONG
 Cache           T_PTROBJ
 Device          T_PTROBJ
 
+#######
 # INPUT
 
+########
 # OUTPUT
