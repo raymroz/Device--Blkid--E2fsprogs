@@ -8,9 +8,14 @@
 
 #include "ppport.h"
 
+/*
+ *
+ * Typedefs - see the typemap file found at the top level of this module
+ * package where all types are mapped against the proper PerlAPI types
+ *
+ */
 typedef struct blkid_struct_cache *Cache;
 typedef struct blkid_struct_dev *Device;
-
 typedef struct blkid_struct_tag_iterate *Tag_Iterate;
 typedef struct blkid_struct_dev_iterate *Dev_Iterate;
 
@@ -25,7 +30,7 @@ void _blkid_put_cache(Cache cache)
     //TODO: sort this routine out
     #ifdef __DEBUG
     printf("    DEBUG: _blkid_put_cache()\n");
-    printf("    DEBUG: arg(1): Cache struct address: %p\n", cache);
+    printf("    DEBUG: arg(1): cache_address(struct):%p\n", cache);
     #endif
 
     blkid_put_cache(cache);
@@ -36,7 +41,7 @@ Cache _blkid_get_cache(const char *filename)
 {
     #ifdef __DEBUG
     printf("    DEBUG: _blkid_get_cache()\n");
-    printf("    DEBUG: arg(1): %s\n", filename);
+    printf("    DEBUG: arg(1): filename:%s\n", filename);
     assert(filename);
     #endif
     
@@ -46,9 +51,9 @@ Cache _blkid_get_cache(const char *filename)
     {
         #ifdef __DEBUG
         printf("    DEBUG: _blkid_get_cache()::blkid_get_cache\n");
-        printf("    DEBUG: Unable to get cache struct from libblkid: %s\n", strerror(errno));
+        printf("    DEBUG: Error retrieving cache struct: %s\n", strerror(errno));
         #endif
-        croak("Error retrieving blkid_cache struct on cache file %s", filename);
+        croak("Error retrieving cache object on cache file %s", filename);
     }
 
     return cache;
@@ -59,11 +64,11 @@ void _blkid_gc_cache(Cache cache)
 {
     #ifdef __DEBUG
     printf("    DEBUG: _blkid_gc_cache()\n");
-    printf("    DEBUG: arg(1): Cache struct address: %p\n", cache);
+    printf("    DEBUG: arg(1): cache_address(struct):%p\n", cache);
     assert(cache);
     #endif
 
-    blkd_gc_cache(cache);
+    blkid_gc_cache(cache);
 }
 
 /*********************************
@@ -76,7 +81,7 @@ const char *_blkid_dev_devname(Device dev)
 {
     #ifdef __DEBUG
     printf("    DEBUG: _blkid_dev_devname()\n");
-    printf("    DEBUG: arg(1): Device struct address: %p\n", dev);
+    printf("    DEBUG: arg(1): device_address(struct):%p\n", dev);
     #endif
 
     const char *device = NULL;
@@ -88,7 +93,7 @@ const char *_blkid_dev_devname(Device dev)
         printf("    DEBUG: _blkid_dev_devname()::blkid_dev_devname()\n");
         printf("    DEBUG: Error occured while getting device name: %s\n", strerror(errno));
         #endif
-        croak("Error occured while getting device name: %s\n", strerror(errno));
+        croak("Error occured retrieving block device name: %s\n", strerror(errno));
     }
 
     return device;
@@ -97,62 +102,237 @@ const char *_blkid_dev_devname(Device dev)
 /* extern blkid_dev_iterate blkid_dev_iterate_begin(blkid_cache cache) */
 Dev_Iterate _blkid_dev_iterate_begin(Cache cache)
 {
-    //TODO: complete
+    #ifdef __DEBUG
+    printf("    DEBUG: _blkid_dev_iterate_begin()\n");
+    printf("    DEBUG: arg(1): cache_address(struct):%p\n", cache);
+    assert(cache);
+    #endif
+
+    Dev_Iterate dev_iter = NULL;
+    dev_iter = blkid_dev_iterate_begin(cache);
+    if (dev_iter == NULL)
+    {
+        #ifdef __DEBUG
+        printf("    DEBUG: _blkid_dev_iterate_begin()::blkid_dev_iterate_begin()\n");
+        printf("    DEBUG: Error retrieving iterator: %s\n", strerror(errno));
+        #endif
+        croak("Error retrieving iterator object: %s\n", strerror(errno));
+    }
+
+    return dev_iter;
 }
 
 /* extern int blkid_dev_set_search(blkid_dev_iterate iter, char *search_type, char *search_value) */
-int _blkid_dev_set_search(Dev_Iterate iter, char *search_type, char *search_value)
+Dev_Iterate _blkid_dev_set_search(Dev_Iterate dev_iter, char *search_type, char *search_value)
 {
-    //TODO: complete
+    #ifdef __DEBUG
+    printf("    DEBUG: _blkid_dev_set_search()\n");
+    printf("    DEBUG: arg(3): dev_iter_address(struct):%p, srch_type:%s, srch_value:%s\n", dev_iter, search_type, search_value);
+    assert(dev_iter);
+    assert(search_type);
+    assert(search_value);
+    #endif
+
+    int rc = 0;
+
+    rc = blkid_dev_set_search(dev_iter, search_type, search_value);
+    if (rc != 0)
+    {
+        #ifdef __DEBUG
+        printf("    DEBUG: _blkid_dev_set_search()::blkid_dev_set_search()\n");
+        printf("    DEBUG: Error occured while setting search filter on iterator: %s\n", strerror(errno));
+        #endif
+        croak("Error applying requested search filter on iterator: %s\n", strerror(errno));
+    }
+
+    return dev_iter;
 }
 
 /* extern int blkid_dev_next(blkid_dev_iterate iterate, blkid_dev *dev) */
-int _blkid_dev_next(Dev_Iterate iter, Device *dev)
+Device _blkid_dev_next(Dev_Iterate dev_iter)
 {
-    //TODO: complete
+    #ifdef __DEBUG
+    printf("    DEBUG: _blkid_dev_next()\n");
+    printf("    DEBUG: args(1): dev_iter_address:%p\n", dev_iter);
+    assert(dev_iter);
+    #endif
+
+    Device device = NULL;
+
+    if ( blkid_dev_next(dev_iter, &device) != 0 )
+    {
+        /* Return of < 0 typically means an end of list sentinal */
+        #ifdef __DEBUG
+        printf("    DEBUG: _blkid_dev_next()::blkid_dev_next()\n");
+        printf("    DEBUG: End of list or error occurred\n");
+        #endif
+
+        /* returns a NULL, maps as undef in Perl */
+        return NULL;
+    }
+
+    /* Otherwise we return a Device object(struct * here, Perl object there).
+     * Note: This device struct is malloc()'d, we must expose a DEMOLISH()
+     * in XSUB to free() it when undef'd in Perl, else memory leak! */
+    return device;
 }
 
 /* extern void blkid_dev_iterate_end(blkid_dev_iterate iterate) */
-void _blkid_dev_iterate_end(Dev_Iterate iter)
+void _blkid_dev_iterate_end(Dev_Iterate dev_iter)
 {
     //TODO: complete
+    #ifdef __DEBUG
+    printf("    DEBUG: _blkid_dev_iterate_end()\n");
+    printf("    DEBUG: arg(1): dev_iter_address:%p\n", dev_iter);
+    assert(dev_iter);
+    #endif
+
+    blkid_dev_iterate_end(dev_iter);
 }
 
-/* extern char *blkid_devno_to_devname(dev_t devno) */
-char *_blkid_devno_to_devname(dev_t devno)
-{
-    //TODO: complete
-}
+/*********************************
+ * devno.c
+ *
+ *********************************/
 
-/* extern char *blkid_get_devname(blkid_cache cache, const char *token, const char *value) */
-/* char *_blkid_evaluate_tag(const char *token, const char *value, Cache cache) */
+/* /\* extern char *blkid_devno_to_devname(dev_t devno) *\/ */
+/* char *_blkid_devno_to_devname(dev_t devno) */
 /* { */
-/*     #ifdef __DEBUG */
-/*     printf("    DEBUG: _blkid_evaluate_tag()\n"); */
-/*     printf("    DEBUG: Args(3) token:%s, value:%s, cache address:%p\n", token, value, cache); */
-/*     assert(token); */
-/*     assert(value); */
-/*     #endif */
-    
-/*     char *device = NULL; */
-
-/*     device = blkid_evaluate_tag(token, value, &cache); */
-/*     if (device == NULL) */
-/*     { */
-/*         #ifdef __DEBUG */
-/*         printf("    DEBUG: _blkid_evaluate_tag()::blkid_evaluate_tag()\n"); */
-/*         printf("    DEBUG: Error occurred during tag evaluation: %s\n", strerror(errno)); */
-/*         #endif */
-/*         croak("Error occurred during tag %s:%s evaluation: %s\n", token, value, strerror(errno)); */
-/*     } */
-    
-/*     return device; */
+/*     //TODO: complete */
 /* } */
+
+/*********************************
+ * devname.c
+ *
+ *********************************/
+
+/* /\* extern int blkid_probe_all(blkid_cache cache) *\/ */
+/* int _blkid_devno_probe_all(Cache cache) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/* /\* extern int blkid_probe_all_new(blkid_cache cache) *\/ */
+/* int _blkid_probe_all_new(Cache cache) */
+/* { */
+/*     //TODO: */
+/* } */
+
+/* /\* extern blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags) *\/ */
+/* Device _blkid_get_dev(Cache cache, const char *devname, int flags) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/*********************************
+ * getsize.c
+ *
+ *********************************/
+
+/* /\* extern blkid_loff_t blkid_get_dev_size(int fd) *\/ */
+/* blkid_loff_t _blkid_get_dev_size(int fd) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/*********************************
+ * probe.c
+ *
+ *********************************/
+
+/* /\* int blkid_known_fstype(const char *fstype) *\/ */
+/* int _blkid_known_fstype(const char *fstype) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/* /\* extern blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev) *\/ */
+/* Device _blkid_verify(Cache cache, Device dev) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/*********************************
+ * resolve.c
+ *
+ *********************************/
+
+/* /\* extern char *blkid_get_tag_value(blkid_cache cache, const char *tagname, const char *devname) *\/ */
+/* char *_blkid_get_tag_value(Cache cache, const char *tagname, const char *devname) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/* /\* extern char *blkid_get_devname(blkid_cache cache, const char *token, const char *value) *\/ */
+/* char *_blkid_get_devname(Cache cache, const char *token, const char *value) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/*********************************
+ * tag.c
+ *
+ *********************************/
+
+/* /\* extern blkid_tag_iterate blkid_tag_iterate_begin(blkid_dev dev) *\/ */
+/* Tag_Iterate _blkid_tag_iterate_beging(Device dev) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/* /\* extern int blkid_tag_next(blkid_tag_iterate iterate, const char **type, const char **value) *\/ */
+/* int _blkid_tag_next(Tag_Iterate iter, const char **type, const char **value) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/* /\* extern void blkid_tag_iterate_end(blkid_tag_iterate iterate) *\/ */
+/* void _blkid_tag_iterate_end(Tag_Iterate iter) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/* /\* extern int blkid_dev_has_tag(blkid_dev dev, const char *type, const char *value) *\/ */
+/* int _blkid_dev_has_tag(Device dev, const char *type, const char *value) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/* /\* extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache, const char *type, const char *value) *\/ */
+/* Device _blkid_find_dev_with_tag(Cache cache, const char *type, const char *value) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/* /\* extern int blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val) *\/ */
+/* int _blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
+/*********************************
+ * version.c
+ *
+ *********************************/
+
+/* /\* extern int blkid_parse_version_string(const char *ver_string) *\/ */
+/* int _blkid_parse_version_string(const char *ver_string) */
+/* { */
+/*     //TODO:: complete */
+/* } */
+
+/* /\* extern int blkid_get_library_version(const char **ver_string, const char **date_string) *\/ */
+/* int _blkid_get_library_version(const char **ver_string, const char **date_string) */
+/* { */
+/*     //TODO: complete */
+/* } */
+
 
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs        PREFIX = _blkid_
 
 PROTOTYPES: DISABLE
 
+########################################    
 ### cache.c
 void _blkid_put_cache(cache)
                        Cache          cache
@@ -160,15 +340,30 @@ void _blkid_put_cache(cache)
 Cache _blkid_get_cache(filename)
                        const char *   filename 
 
+void _blkid_gc_cache(cache)
+                       Cache          cache
+
+########################################    
 ### dev.c
 const char *_blkid_dev_devname(dev)
                        Device         dev
 
-### tag.c
-###char *_blkid_evaluate_tag(token, value, cache)
-###                       const char *   token
-###                       const char *   value
-###                       Cache          cache
+Dev_Iterate _blkid_dev_iterate_begin(cache)
+                       Cache          cache
+
+Dev_Iterate _blkid_dev_set_search(dev_iter, search_type, search_value)
+                       Dev_Iterate    dev_iter
+                       char *         search_type
+                       char *         search_value
+
+Device _blkid_dev_next(dev_iter)
+                       Dev_Iterate    dev_iter
+
+void _blkid_dev_iterate_end(dev_iter)
+                       Dev_Iterate    dev_iter
+
+########################################    
+### devno.c
 
 
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::Cache            PREFIX = _blkid_
@@ -178,3 +373,11 @@ void _blkid_DESTROY(cache)
                    CODE:
                        printf("In Cache::DESTROY\n");
                        free(cache);
+
+MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::Device           PREFIX = _blkid_
+
+void _blkid_DESTROY(device)
+                       Device         device
+                   CODE:
+                       printf("In Device::DESTROY\n");
+                       free(device);

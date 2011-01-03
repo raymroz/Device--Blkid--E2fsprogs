@@ -1,5 +1,7 @@
 package Device::Blkid::E2fsprogs;
 
+our $VERSION = '0.01';
+
 use 5.008000;
 use strict;
 use warnings;
@@ -9,26 +11,56 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = (
-    'consts' => [ qw(
-                        BLKID_DEV_FIND
-                        BLKID_DEV_CREATE
-                        BLKID_DEV_VERIFY
-                        BLKID_DEV_NORMAL
-                    ) ],
-    'funcs' => [ qw(
-                       blkid_get_cache
-                       blkid_get_devname
-                       ) ],
+    'consts' => [
+        qw(
+          BLKID_DEV_FIND
+          BLKID_DEV_CREATE
+          BLKID_DEV_VERIFY
+          BLKID_DEV_NORMAL
+          )
+    ],
+    'funcs' => [
+        qw(
+          put_cache
+          get_cache
+          gc_cache
+          dev_devname
+          dev_iterate_begin
+          dev_set_search
+          dev_next
+          dev_iterate_end
+          devno_to_devname
+          probe_all
+          probe_all_new
+          get_dev
+          get_dev_size
+          known_fstype
+          verify
+          get_tag_value
+          get_devname
+          tag_iterate_begin
+          tag_next
+          tag_iterate_end
+          dev_has_tag
+          find_dev_with_tag
+          parse_tag_string
+          parse_version_string
+          get_library_version
+          )
+    ],
 );
 Exporter::export_ok_tags('consts');
 Exporter::export_ok_tags('funcs');
 
-our $VERSION = '0.01';
+use constant {
+    BLKID_DEV_FIND   => 0x0000,
+    BLKID_DEV_CREATE => 0x0001,
+    BLKID_DEV_VERIFY => 0x0002,
+    BLKID_DEV_NORMAL => ( BLKID_DEV_CREATE | BLKID_DEV_VERIFY ),
+};
 
 require XSLoader;
-XSLoader::load('Device::Blkid::E2fsprogs', $VERSION);
-
-
+XSLoader::load( 'Device::Blkid::E2fsprogs', $VERSION );
 
 # Preloaded methods go here.
 
@@ -100,6 +132,10 @@ return Perl-style eval-based exceptions when exceptional conditions occur inside
 C functions. The exceptions are all string style, no objects are passed. See the L</"SYNOPSIS"> above
 for further details.
 
+=head2 DEPENDENCIES
+
+L<E2fsprogs project home page|http://e2fsprogs.sourceforge.net/>
+
 =head2 EXPORT
 
 Nothing is exported by default, but constants and package functions are available as follows:
@@ -112,11 +148,79 @@ Nothing is exported by default, but constants and package functions are availabl
 
   use Device::Blkid::E2fsprogs qw/ :funcs /;
 
+=head2 CONSTANTS
+
+=over 4
+
+=item  C<BLKID_DEV_CREATE>
+
+Create and empty device structure if not found in the cache.
+
+=item C<BLKID_DEV_VERIFY>
+
+Make sure the device structure corresponds with reality.
+
+=item C<BLKID_DEV_FIND>
+
+Just look up a device entry and return NULL (undef) if not found.
+
+=item C<BLKID_DEV_NORMAL>
+
+Get a valid device structure, either from the cache or by probing the block device.
+
+=back
+
+=head2 FUNCTIONS
+
+=over 4
+
+=item C<put_cache($cache)>
+
+Write any changes to the blkid cache file.
+
+=item C<get_cache($cache, $filename)>
+
+Get a blkid cache object reference. While this reference is a blessed Perl object representing the
+underlying cache C structure, it is immutable from a Perl perspective. Throws an exception on fail.
+
+=item C<gc_cache($cache)>
+
+Calling this performs a garbage cleanup on the specified cache by removing all non-existant devices.
+
+=item C<dev_devname($device)>
+
+Given a blkid device object, returns a string representation of the device (e.g., /dev/sda9).
+
+=item C<dev_iterate_begin($cache)>
+
+Returns an iterator object on the specified device cache.
+
+=item C<dev_set_search($dev_iter, $type, $value)>
+
+This function places a search filter on the specified device iterator based upon the criteria passed
+in on the final two arguments of the function. After this function has been called on the given iterator
+with a type and value argument, the iterator will only return onjects which match the specified criteria.
+Please note, the $type argument can also contain any valid blkid entity category, such as a LABEL or UUID
+tag for example.
+
+  # Set iterator to filter and match only on ext4 file systems
+  dev_set_search($dev_iter, 'TYPE', 'ext4');
+
+=item C<dev_next($dev_iter, $device)>
+
+Returns the next device in the iteration. An undef is returned at the end of the list and can be used as
+a sentinal.
+
+=back
+
 =head1 SEE ALSO
 
 L<E2fsprogs project home page|http://e2fsprogs.sourceforge.net/>
+
 L<blkid(8)>
+
 L<PerlXS|http://perldoc.perl.org/perlxs.html>
+
 L<Device::Blkid>
 
 This package project is also hosted on Github at

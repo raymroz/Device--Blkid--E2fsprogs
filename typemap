@@ -5,6 +5,8 @@ __s64           T_IV
 dev_t           T_U_LONG
 Cache           T_PTROBJ
 Device          T_PTROBJ
+Dev_Iterate     T_PTROBJ
+Tag_Iterate     T_PTROBJ
 
 #######
 # INPUT
