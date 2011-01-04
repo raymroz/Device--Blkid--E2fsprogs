@@ -24,8 +24,10 @@ WriteMakefile(
     NEEDS_LINKING => 1,
 
     # To create a debug build, please add '-D__DEBUG' to the DEFINE
-    # line below, as here:      DEFINE  =>  '-D__DEBUG',
-    DEFINE => '-D__DEBUG',
+    # line below, as here:      DEFINE  =>  '-D__DEBUG', or uncomment
+    # the line below.
+    # DEFINE => '-D__DEBUG',
+    DEFINE => '',
     INC    => '-I.',
 
     # Un-comment this if you add C files to link with later:

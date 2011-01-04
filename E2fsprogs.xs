@@ -1,3 +1,13 @@
+/*
+ * Ray Mroz - mroz@cpan.org
+ *
+ * Copyright (C) 2010
+ * E2fsprogs.xs
+ * December 2010
+ *
+ */
+
+
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
