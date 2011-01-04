@@ -52,12 +52,10 @@ our %EXPORT_TAGS = (
 Exporter::export_ok_tags('consts');
 Exporter::export_ok_tags('funcs');
 
-use constant {
-    BLKID_DEV_FIND   => 0x0000,
-    BLKID_DEV_CREATE => 0x0001,
-    BLKID_DEV_VERIFY => 0x0002,
-    BLKID_DEV_NORMAL => ( BLKID_DEV_CREATE | BLKID_DEV_VERIFY ),
-};
+use constant BLKID_DEV_FIND   => 0x0000;
+use constant BLKID_DEV_CREATE => 0x0001;
+use constant BLKID_DEV_VERIFY => 0x0002;
+use constant BLKID_DEV_NORMAL => ( BLKID_DEV_CREATE | BLKID_DEV_VERIFY );
 
 require XSLoader;
 XSLoader::load( 'Device::Blkid::E2fsprogs', $VERSION );
