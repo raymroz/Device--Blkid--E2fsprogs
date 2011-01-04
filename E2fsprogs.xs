@@ -139,10 +139,10 @@ DevIter _blkid_dev_set_search(DevIter iter, char *search_type, char *search_valu
     if (rc != 0)
     {
         #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_dev_set_search()::blkid_dev_set_search()\n");
-        printf("\tDEBUG: Error occured while setting search filter on iterator: %s\n", strerror(errno));
+        perror("\tDEBUG: blkid_dev_set_search(): Error while applying search filter on iterator object");
         #endif
-        croak("Error applying requested search filter on iterator: %s\n", strerror(errno));
+
+        return NULL;
     }
 
     return iter;
@@ -163,8 +163,8 @@ Device _blkid_dev_next(DevIter iter)
     {
         /* Return of < 0 typically means an end of list sentinal */
         #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_dev_next()::blkid_dev_next()\n");
-        printf("\tDEBUG: End of list or error occurred\n");
+        printf("\tDEBUG: blkid_dev_next()\n");
+        printf("\tDEBUG: End of list (or error occurred)\n");
         #endif
 
         /* returns a NULL, maps as undef in Perl */
@@ -226,8 +226,7 @@ Cache _blkid_probe_all(Cache cache)
     if ( blkid_probe_all(cache) != 0 )
     {
         #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_probe_all()::blkid_probe_all()\n");
-        printf("\tDEBUG: Failed to probe blkid cache: %s\n", strerror(errno));
+        perror("\tDEBUG: blkid_probe_all(): Error occured while probling cache");
         #endif //__DEBUG
 
         return NULL;
@@ -251,8 +250,7 @@ Cache _blkid_probe_all_new(Cache cache)
     if ( blkid_probe_all_new(cache) != 0 )
     {
         #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_probe_all_new()::blkid_probe_all_new()\n");
-        printf("\tDEBUG: Failed to probe blkid cache for new devices: %s\n", strerror(errno));
+        perror("\tDEBUG: blkid_probe_all_new(): Error while probing for new devices in cache");
         #endif //__DEBUG
 
         return NULL;
@@ -277,8 +275,7 @@ Device _blkid_get_dev(Cache cache, const char *devname, int flags)
     if ( blkid_get_dev(cache, devname, flags) == NULL )
     {
         #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_get_dev()::blkid_get_dev()\n");
-        printf("\tDEBUG: Error retrieving device object: %s\n", strerror(errno));
+        perror("\tDEBUG: blkid_get_dev(): Error retrieving device object");
         #endif //__DEBUG
         return NULL;
     }
@@ -330,7 +327,7 @@ const char *_blkid_known_fstype(const char *fstype)
     if (rc == 0)
     {
         #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_known_fstype()::blkid_known_fstype()\n");
+        printf("\tDEBUG: blkid_known_fstype()\n");
         printf("\tDEBUG: Unknown file system type %s\n", fstype);
         #endif //__DEBUG
 
@@ -360,7 +357,7 @@ Device _blkid_verify(Cache cache, Device device)
     {
         #ifdef __DEBUG
         printf("\tDEBUG: _blkid_verify()::blkid_verify()\n");
-        printf("\tDEBUG: Device verification failed\n");
+        printf("\tDEBUG: Unable to verify block device\n");
         #endif //__DEBUG
 
         return NULL;
@@ -392,8 +389,7 @@ char *_blkid_get_tag_value(Cache cache, const char *tagname, const char *devname
     if (tag_value == NULL)
     {
         #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_get_tag_value()::blkid_get_tag_value()\n");
-        printf("\tDEBUG: Unable to retrieve block tag value: %s\n", strerror(errno));
+        perror("\tDEBUG: blkid_get_tag_value(): Unable to retrieve tag value from cache");
         #endif //__DEBUG
 
         return NULL;
@@ -420,8 +416,7 @@ char *_blkid_get_devname(Cache cache, const char *token, const char *value)
     if (devname == NULL)
     {
         #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_get_devname()::blkid_get_devname()\n");
-        printf("\tDEBUG: Unable to retrieve device name: %s\n", strerror(errno));
+        perror("\tDEBUG: blkid_get_devname(): Unable to retrieve device name");
         #endif //__DEBUG
 
         return NULL;
@@ -435,11 +430,11 @@ char *_blkid_get_devname(Cache cache, const char *token, const char *value)
  *
  *********************************/
 
-/* extern blkid_iterate blkid_iterate_begin(blkid_dev dev) */
+/* extern blkid_iterate blkid_tag_iterate_begin(blkid_dev dev) */
 TagIter _blkid_tag_iterate_begin(Device device)
 {
     #ifdef __DEBUG
-    printf("\tDEBUG: _blkid_iterate_begin()\n");
+    printf("\tDEBUG: _blkid_tag_iterate_begin()\n");
     printf("\tDEBUG: arg(1): device_address:%p\n", device);
     assert(device);
     #endif //__DEBUG
@@ -450,7 +445,7 @@ TagIter _blkid_tag_iterate_begin(Device device)
     if (iter == NULL)
     {
         #ifdef __DEBUG
-        perror("\tDEBUG: blkid_iterate_begin()");
+        perror("\tDEBUG: blkid_tag_iterate_begin(): Error retrieving iterator");
         #endif //__DEBUG
 
         return NULL;
@@ -504,11 +499,11 @@ HV *_blkid_tag_next(TagIter iter)
     }   
 }
 
-/* extern void blkid_iterate_end(blkid_iterate iterate) */
+/* extern void blkid_tag_iterate_end(blkid_iterate iterate) */
 void _blkid_tag_iterate_end(TagIter iter)
 {
     #ifdef __DEBUG
-    printf("\tDEBUG: _blkid_iterate_end()\n");
+    printf("\tDEBUG: _blkid_tag_iterate_end()\n");
     printf("\tDEBUG: arg(1): iter_address:%p\n", iter);
     assert(iter);
     #endif //__DEBUG
@@ -560,7 +555,7 @@ Device _blkid_find_dev_with_tag(Cache cache, const char *type, const char *value
     if (device == NULL)
     {
         #ifdef __DEBUG
-        perror("blkid_find_dev_with_tag(): Error finding device with specified tag data");
+        perror("\tDEBUG: blkid_find_dev_with_tag(): Error finding device with specified tag data");
         #endif //__DEBUG
 
         return NULL;
@@ -572,8 +567,9 @@ Device _blkid_find_dev_with_tag(Cache cache, const char *type, const char *value
 
 /*
  *
- * TODO:: Complete last three function wrappers. These are of the more involved variety, such as
- *        blkid_tag_next() above which returns a Perl hash (HV *) via the PerlAPI for C.
+ * TODO:: Complete last two function wrappers. These are of the more involved variety, such as
+ *        blkid_tag_next() above which returns a Perl hash (HV *) via the PerlAPI for C, and my
+ *        brain is fried after 12 hours of coding.
  *
  */
 
