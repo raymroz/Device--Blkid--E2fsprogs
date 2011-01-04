@@ -4,7 +4,7 @@ Device-Blkid-E2fsprogs version 0.01
 NOTE: This library only exposes the older e2fsprogs versions of libblkid ( numbered 1.xx.xx)                                                                                                                                              
 and not the newer and preferred util-linux-ng versions ( v2.15 or better ). In almost                                                                                                                                                     
 every case you would be advised to use Friedrich Bastion's util-linux-ng based                                                                                                                                                            
-L<Device::Blkid> module as the newer lib interface is (mostly) backward compatible with the                                                                                                                                               
+Device::Blkid module as the newer lib interface is (mostly) backward compatible with the                                                                                                                                               
 old one. This module would prove useful in any situation where for any reason you are                                                                                                                                                     
 limited on your systems to a 1.xx.xx libblkid version which is a part of the e2fsprogs                                                                                                                                                    
 package. Incidentally, libblkid version numbering is based upon the version of either                                                                                                                                                     
@@ -79,6 +79,11 @@ Copyright (C) 2010 by Raymond Mroz
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.1 or,
 at your option, any later version of Perl 5 you may have available.
+
+THANKS
+
+Thanks to Friedrich for inspiration, especially your POD; its saved me hours of just pounding
+documenting calls in straight C into the lib.  Thanks.
 
 BUGS
 

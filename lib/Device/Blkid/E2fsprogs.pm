@@ -60,8 +60,6 @@ use constant BLKID_DEV_NORMAL => ( BLKID_DEV_CREATE | BLKID_DEV_VERIFY );
 require XSLoader;
 XSLoader::load( 'Device::Blkid::E2fsprogs', $VERSION );
 
-# Preloaded methods go here.
-
 1;
 __END__
 
@@ -110,6 +108,12 @@ Device::Blkid::E2fsprogs - Perl interface to e2fsprogs versions (1.xx.xx) of lib
   So just to be clear, when in doubt you are advised to grab Friedrich's newer util-linux-ng
   based libblkid interface module unless you have some specific reason as to why you can't,
   perhaps something similar to what led me to write this version.
+
+  This version is designed in the back end somewhat differently than Friedrichs util-linux-ng
+  build of the library. He opted to keep much of his logic and processing in XSUB, mine is done
+  mostly in C; I have only used XSUB for my straight glue, everything else I kept in C. This is
+  not to be taken as any opinion of statement on PerlXS/XSUB, its merely a reflection of my own
+  background and tastes.
 
 This package provides a Perl interface to the v1.xx.xx e2fsprogs-based versions of libblkid. It does
 not support the larger and more robust API which has been added and integrated into the libblkid
