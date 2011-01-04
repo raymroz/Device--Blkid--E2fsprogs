@@ -50,10 +50,10 @@ Cache _blkid_get_cache(const char *filename)
     if ( blkid_get_cache( &cache, filename ) )
     {
         #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_get_cache()::blkid_get_cache\n");
-        printf("\tDEBUG: Error retrieving cache struct: %s\n", strerror(errno));
+        perror("\tDEBUG: blkid_get_cache(): Error retrieving cache object");
         #endif
-        croak("Error retrieving cache object on cache file %s", filename);
+
+        return NULL;
     }
 
     return cache;
@@ -90,16 +90,16 @@ const char *_blkid_dev_devname(Device device)
     if (devname == NULL)
     {
         #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_dev_devname()::blkid_dev_devname()\n");
-        printf("\tDEBUG: Error occured while getting device name: %s\n", strerror(errno));
+        perror("\tDEBUG: blkid_dev_devname(): Error retrieving block device name");
         #endif
-        croak("Error occured retrieving block device name: %s\n", strerror(errno));
+
+        return NULL;
     }
 
     return devname;
 }
 
-/* extern blkid_dev_iterate blkid_dev_iterate_begin(blkid_cache cache) */
+/* extern blkid_iterate blkid_iterate_begin(blkid_cache cache) */
 DevIter _blkid_dev_iterate_begin(Cache cache)
 {
     #ifdef __DEBUG
@@ -108,34 +108,34 @@ DevIter _blkid_dev_iterate_begin(Cache cache)
     assert(cache);
     #endif
 
-    DevIter dev_iter = NULL;
-    dev_iter = blkid_dev_iterate_begin(cache);
-    if (dev_iter == NULL)
+    DevIter iter = NULL;
+    iter = blkid_dev_iterate_begin(cache);
+    if (iter == NULL)
     {
         #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_dev_iterate_begin()::blkid_dev_iterate_begin()\n");
-        printf("\tDEBUG: Error retrieving iterator: %s\n", strerror(errno));
+        perror("\tDEBUG: blkid_dev_iterate_begin(): error retrieving iterator");
         #endif
-        croak("Error retrieving iterator object: %s\n", strerror(errno));
+
+        return NULL;
     }
 
-    return dev_iter;
+    return iter;
 }
 
-/* extern int blkid_dev_set_search(blkid_dev_iterate iter, char *search_type, char *search_value) */
-DevIter _blkid_dev_set_search(DevIter dev_iter, char *search_type, char *search_value)
+/* extern int blkid_dev_set_search(blkid_iterate iter, char *search_type, char *search_value) */
+DevIter _blkid_dev_set_search(DevIter iter, char *search_type, char *search_value)
 {
     #ifdef __DEBUG
     printf("\tDEBUG: _blkid_dev_set_search()\n");
-    printf("\tDEBUG: arg(3): dev_iter_address(struct):%p, srch_type:%s, srch_value:%s\n", dev_iter, search_type, search_value);
-    assert(dev_iter);
+    printf("\tDEBUG: arg(3): iter_address(struct):%p, srch_type:%s, srch_value:%s\n", iter, search_type, search_value);
+    assert(iter);
     assert(search_type);
     assert(search_value);
     #endif
 
     int rc = 0;
 
-    rc = blkid_dev_set_search(dev_iter, search_type, search_value);
+    rc = blkid_dev_set_search(iter, search_type, search_value);
     if (rc != 0)
     {
         #ifdef __DEBUG
@@ -145,21 +145,21 @@ DevIter _blkid_dev_set_search(DevIter dev_iter, char *search_type, char *search_
         croak("Error applying requested search filter on iterator: %s\n", strerror(errno));
     }
 
-    return dev_iter;
+    return iter;
 }
 
-/* extern int blkid_dev_next(blkid_dev_iterate iterate, blkid_dev *dev) */
-Device _blkid_dev_next(DevIter dev_iter)
+/* extern int blkid_dev_next(blkid_iterate iterate, blkid_dev *dev) */
+Device _blkid_dev_next(DevIter iter)
 {
     #ifdef __DEBUG
     printf("\tDEBUG: _blkid_dev_next()\n");
-    printf("\tDEBUG: args(1): dev_iter_address:%p\n", dev_iter);
-    assert(dev_iter);
+    printf("\tDEBUG: args(1): iter_address:%p\n", iter);
+    assert(iter);
     #endif
 
     Device device = NULL;
 
-    if ( blkid_dev_next(dev_iter, &device) != 0 )
+    if ( blkid_dev_next(iter, &device) != 0 )
     {
         /* Return of < 0 typically means an end of list sentinal */
         #ifdef __DEBUG
@@ -177,17 +177,17 @@ Device _blkid_dev_next(DevIter dev_iter)
     return device;
 }
 
-/* extern void blkid_dev_iterate_end(blkid_dev_iterate iterate) */
-void _blkid_dev_iterate_end(DevIter dev_iter)
+/* extern void blkid_iterate_end(blkid_iterate iterate) */
+void _blkid_dev_iterate_end(DevIter iter)
 {
     //TODO: complete
     #ifdef __DEBUG
-    printf("\tDEBUG: _blkid_dev_iterate_end()\n");
-    printf("\tDEBUG: arg(1): dev_iter_address:%p\n", dev_iter);
-    assert(dev_iter);
+    printf("\tDEBUG: _blkid_iterate_end()\n");
+    printf("\tDEBUG: arg(1): iter_address:%p\n", iter);
+    assert(iter);
     #endif
 
-    blkid_dev_iterate_end(dev_iter);
+    blkid_dev_iterate_end(iter);
 }
 
 /*********************************
@@ -258,8 +258,7 @@ Cache _blkid_probe_all_new(Cache cache)
         return NULL;
     }
     
-    return cache;
-   
+    return cache;   
 }
 
 /* extern blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags) */
@@ -436,35 +435,147 @@ char *_blkid_get_devname(Cache cache, const char *token, const char *value)
  *
  *********************************/
 
-/* /\* extern blkid_tag_iterate blkid_tag_iterate_begin(blkid_dev dev) *\/ */
-/* TagIter _blkid_tag_iterate_beging(Device dev) */
-/* { */
-/*     //TODO: complete */
-/* } */
+/* extern blkid_iterate blkid_iterate_begin(blkid_dev dev) */
+TagIter _blkid_tag_iterate_begin(Device device)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_iterate_begin()\n");
+    printf("\tDEBUG: arg(1): device_address:%p\n", device);
+    assert(device);
+    #endif //__DEBUG
 
-/* /\* extern int blkid_tag_next(blkid_tag_iterate iterate, const char **type, const char **value) *\/ */
-/* int _blkid_tag_next(TagIter iter, const char **type, const char **value) */
-/* { */
-/*     //TODO: complete */
-/* } */
+    TagIter iter = NULL;
 
-/* /\* extern void blkid_tag_iterate_end(blkid_tag_iterate iterate) *\/ */
-/* void _blkid_tag_iterate_end(TagIter tag_iter) */
-/* { */
-/*     //TODO: complete */
-/* } */
+    iter = blkid_tag_iterate_begin(device);
+    if (iter == NULL)
+    {
+        #ifdef __DEBUG
+        perror("\tDEBUG: blkid_iterate_begin()");
+        #endif //__DEBUG
 
-/* /\* extern int blkid_dev_has_tag(blkid_dev dev, const char *type, const char *value) *\/ */
-/* int _blkid_dev_has_tag(Device dev, const char *type, const char *value) */
-/* { */
-/*     //TODO: complete */
-/* } */
+        return NULL;
+    }
 
-/* /\* extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache, const char *type, const char *value) *\/ */
-/* Device _blkid_find_dev_with_tag(Cache cache, const char *type, const char *value) */
-/* { */
-/*     //TODO: complete */
-/* } */
+    return iter;
+}
+
+/* extern int blkid_tag_next(blkid_iterate iterate, const char **type, const char **value) */
+HV *_blkid_tag_next(TagIter iter)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_tag_next()\n");
+    printf("\tDEBUG: arg(1): iter_address:%p\n", iter);
+    assert(iter);
+    #endif //__DEBUG
+
+    int rc            = 0;
+    const char *type  = NULL;
+    const char *value = NULL;
+    HV *tag_hash      = NULL;
+
+    /* Used to check 'hv_store' return vals later */
+    SV   *sv_type, *sv_value = NULL;
+    
+    /* If everything looks OK, use PerlAPI to build a hash type and a ptr to it,
+     * otherwise send back a NULL(undef) */
+    rc = blkid_tag_next(iter, &type, &value);
+    if ( type && value && (rc == 0) )
+    {
+        tag_hash = (HV *)sv_2mortal((SV *)newHV());
+
+        /* We check the returns here, 'sv' vars, to make sure that the hash
+         * has been built properly, if not return a NULL(undef) */
+        sv_type  = (SV *)hv_store(tag_hash, "type",  4, newSVpv(type,  0), 0);
+        sv_value = (SV *)hv_store(tag_hash, "value", 5, newSVpv(value, 0), 0);
+        if ( !sv_type || !sv_value )
+        {
+            #ifdef __DEBUG
+            perror("hv_store(): Error constructing hash");
+            #endif //__DEBUG
+
+            return NULL;
+        }
+
+        return tag_hash;
+    }
+    else
+    {
+        return NULL;
+    }   
+}
+
+/* extern void blkid_iterate_end(blkid_iterate iterate) */
+void _blkid_tag_iterate_end(TagIter iter)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_iterate_end()\n");
+    printf("\tDEBUG: arg(1): iter_address:%p\n", iter);
+    assert(iter);
+    #endif //__DEBUG
+
+    blkid_tag_iterate_end(iter);
+}
+
+/* extern int blkid_dev_has_tag(blkid_dev dev, const char *type, const char *value) */
+Device _blkid_dev_has_tag(Device device, const char *type, const char *value)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_dev_has_tag()\n");
+    printf("\tDEBUG: args(3): device_address:%p, type:%s, value:%s\n", device, type, value);
+    assert(device);
+    assert(type);
+    assert(value);
+    #endif //__DEBUG
+
+    /* If the specified tag is not present in device, return a NULL(undef), otherwise
+     * return the device object */
+    int rc = 0;
+    rc = blkid_dev_has_tag(device, type, value);
+    if (rc == 0)
+    {
+        #ifdef __DEBUG
+        printf("\tDEBUG: Tag not present in device specified\n");
+        #endif //__DEBUG
+
+        return NULL;
+    }
+
+    return device;
+}
+
+/* extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache, const char *type, const char *value) */
+Device _blkid_find_dev_with_tag(Cache cache, const char *type, const char *value)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_find_dev_with_tag()\n");
+    printf("\tDEBUG: arg(3): cache_address:%p, type:%s, value:%s\n", cache, type, value);
+    assert(cache);
+    assert(type);
+    assert(value);
+    #endif //__DEBUG
+
+    Device device = NULL;
+
+    device = blkid_find_dev_with_tag(cache, type, value);
+    if (device == NULL)
+    {
+        #ifdef __DEBUG
+        perror("blkid_find_dev_with_tag(): Error finding device with specified tag data");
+        #endif //__DEBUG
+
+        return NULL;
+    }
+
+    return device;
+}
+
+
+/*
+ *
+ * TODO:: Complete last three function wrappers. These are of the more involved variety, such as
+ *        blkid_tag_next() above which returns a Perl hash (HV *) via the PerlAPI for C.
+ *
+ */
 
 /* /\* extern int blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val) *\/ */
 /* int _blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val) */
@@ -477,11 +588,17 @@ char *_blkid_get_devname(Cache cache, const char *token, const char *value)
  *
  *********************************/
 
-/* /\* extern int blkid_parse_version_string(const char *ver_string) *\/ */
-/* int _blkid_parse_version_string(const char *ver_string) */
-/* { */
-/*     //TODO:: complete */
-/* } */
+/* extern int blkid_parse_version_string(const char *ver_string) */
+int _blkid_parse_version_string(const char *ver_string)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_parse_version_string()\n");
+    printf("\tDEBUG: arg(1): ver_string:%s\n", ver_string);
+    assert(ver_string);
+    #endif //__DEBUG
+
+    return blkid_parse_version_string(ver_string);
+}
 
 /* /\* extern int blkid_get_library_version(const char **ver_string, const char **date_string) *\/ */
 /* int _blkid_get_library_version(const char **ver_string, const char **date_string) */
@@ -496,6 +613,7 @@ PROTOTYPES: DISABLE
 
 ######################################################
 ### cache.c    
+
 void _blkid_put_cache(cache)
                        Cache          cache
 
@@ -508,32 +626,35 @@ void _blkid_gc_cache(cache)
 
 ######################################################
 ### dev.c    
-const char *_blkid_dev_devname(dev)
-                       Device         dev
+
+const char *_blkid_dev_devname(device)
+                       Device         device
 
 DevIter _blkid_dev_iterate_begin(cache)
                        Cache          cache
 
-DevIter _blkid_dev_set_search(dev_iter, search_type, search_value)
-                       DevIter        dev_iter
+DevIter _blkid_dev_set_search(iter, search_type, search_value)
+                       DevIter        iter
                        char *         search_type
                        char *         search_value
 
-Device _blkid_dev_next(dev_iter)
-                       DevIter        dev_iter
+Device _blkid_dev_next(iter)
+                       DevIter        iter
 
-void _blkid_dev_iterate_end(dev_iter)
-                       DevIter        dev_iter
+void _blkid_dev_iterate_end(iter)
+                       DevIter        iter
 
 
 ######################################################
 ### devno.c
+
 char *_blkid_devno_to_devname(devno)
                        dev_t          devno
 
 
 ######################################################
 ### devname.c
+
 Cache _blkid_probe_all(cache)
                        Cache          cache
 
@@ -545,14 +666,17 @@ Device _blkid_get_dev(cache, devname, flags)
                        const char *   devname
                        int            flags
 
+
 ######################################################
 ### getsize.c
+
 blkid_loff_t _blkid_get_dev_size(fd)
                        int            fd
 
 
 ######################################################
 ### probe.c
+
 const char *_blkid_known_fstype(fstype)
                        const char *   fstype
 
@@ -563,6 +687,7 @@ Device _blkid_verify(cache, device)
 
 ######################################################
 ### resolve.c
+
 char *_blkid_get_tag_value(cache, tagname, devname)
                        Cache          cache
                        const char *   tagname
@@ -577,9 +702,32 @@ char *_blkid_get_devname(cache, token, value)
 ######################################################
 ### tag.c
 
+TagIter _blkid_tag_iterate_begin(device)
+                       Device         device
 
+HV *_blkid_tag_next(iter)
+                       TagIter        iter
+    
+void _blkid_tag_iterate_end(iter)
+                       TagIter        iter
+
+Device _blkid_dev_has_tag(device, type, value)
+                       Device         device
+                       const char *   type
+                       const char *   value
+
+Device _blkid_find_dev_with_tag(cache, type, value)
+                       Cache          cache
+                       const char *   type
+                       const char *   value
+
+
+    
 ######################################################
 ### version.c
+
+int _blkid_parse_version_string(ver_string)
+                       const char *   ver_string
 
 
 
@@ -607,17 +755,17 @@ void _blkid_DESTROY(device)
 
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::DevIter          PREFIX = _blkid_
 
-void _blkid_DESTROY(dev_iter)
-                       DevIter        dev_iter
+void _blkid_DESTROY(iter)
+                       DevIter        iter
                    CODE:
                        printf("In DevIter::DESTROY\n");
-                       free(dev_iter);
+                       free(iter);
 
 
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::TagIter          PREFIX = _blkid_
 
-void _blkid_DESTROY(tag_iter)
-                       TagIter        tag_iter
+void _blkid_DESTROY(iter)
+                       TagIter        iter
                    CODE:
                        printf("In TagIter::DESTROY\n");
-                       free(tag_iter);
+                       free(iter);
