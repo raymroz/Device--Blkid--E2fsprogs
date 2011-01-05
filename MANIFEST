@@ -2,6 +2,7 @@ Changes
 E2fsprogs.xs
 Makefile.PL
 MANIFEST
+MANIFEST.skip
 ppport.h
 README
 t/00-load.t
