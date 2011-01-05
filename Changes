@@ -1,12 +1,22 @@
 Revision history for Perl extension Device::Blkid::E2fsprogs.
 
-0.01  Sat Jan  1 11:35:09 2011
+0.01  Sat Jan  1 11:35:09 AST 2011
 	- original version; created by h2xs 1.23 with options
 		-A -n Device::Blkid::E2fsprogs
 
-0.10  Mon Jan  4 00:13:24 2011
+0.10  Tue Jan  4 00:13:24 AST 2011
 	- Moving this to version 0.10 after some feverish cleaning
         - Package builds, POD is semi-release worthy
         - Ready for upload on CPAN now as a developer release
         - still requires test script completion
 
+0.12  Tue Jan  4 18:30:46 AST 2011
+        - Cleaned up POD typos, finished documenting all functions
+        - Added last two function wrappers
+                - blkid_get_library_version()
+                - blkid_parse_tag_string()
+        - Have switched undef return types in object creation functions to
+          instead throw exceptions. This happens when the cache, device and
+          two iterator objects are requested from the lib.
+        - Modified and reogranized README somewhat
+        - Removed Data::Dump dependency from Makefile.PL
