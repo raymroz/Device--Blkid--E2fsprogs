@@ -5,6 +5,7 @@
  * E2fsprogs.xs
  * December 2010
  *
+ * Version: 0.12
  */
 
 
@@ -62,8 +63,7 @@ Cache _blkid_get_cache(const char *filename)
         #ifdef __DEBUG
         perror("\tDEBUG: blkid_get_cache(): Error retrieving cache object");
         #endif
-
-        return NULL;
+        croak("Error retrieving cache object: %s\n", strerror(errno));
     }
 
     return cache;
@@ -125,8 +125,7 @@ DevIter _blkid_dev_iterate_begin(Cache cache)
         #ifdef __DEBUG
         perror("\tDEBUG: blkid_dev_iterate_begin(): error retrieving iterator");
         #endif
-
-        return NULL;
+        croak("Error retrieving device iterator object: %s\n", strerror(errno));
     }
 
     return iter;
@@ -287,7 +286,7 @@ Device _blkid_get_dev(Cache cache, const char *devname, int flags)
         #ifdef __DEBUG
         perror("\tDEBUG: blkid_get_dev(): Error retrieving device object");
         #endif //__DEBUG
-        return NULL;
+        croak("Error retrieving device object: %s\n", strerror(errno));
     }
 
     return device;
@@ -457,8 +456,7 @@ TagIter _blkid_tag_iterate_begin(Device device)
         #ifdef __DEBUG
         perror("\tDEBUG: blkid_tag_iterate_begin(): Error retrieving iterator");
         #endif //__DEBUG
-
-        return NULL;
+        croak("Error retrieving tag iterator object: %s\n", strerror(errno));
     }
 
     return iter;
@@ -574,20 +572,49 @@ Device _blkid_find_dev_with_tag(Cache cache, const char *type, const char *value
     return device;
 }
 
+/* extern int blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val) */
+HV *_blkid_parse_tag_string(const char *token)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_parse_tag_string()\n");
+    printf("\tDEBUG: arg(1): token:%s\n", token);
+    assert(token);
+    #endif //__DEBUG
 
-/*
- *
- * TODO:: Complete last two function wrappers. These are of the more involved variety, such as
- *        blkid_tag_next() above which returns a Perl hash (HV *) via the PerlAPI for C, and my
- *        brain is fried after 12 hours of coding.
- *
- */
+    int rc          = 0;
+    char *type      = NULL;
+    char *value     = NULL;
+    HV *token_hash  = NULL;
 
-/* /\* extern int blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val) *\/ */
-/* int _blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val) */
-/* { */
-/*     //TODO: complete */
-/* } */
+    /* we need to check hv_store returns */
+    SV   *sv_type, *sv_value = NULL;
+
+    /* Use PerlAPI to build a hash type */
+    rc = blkid_parse_tag_string(token, &type, &value);
+    if ( type && value && (rc == 0) )
+    {
+        token_hash = (HV *)sv_2mortal((SV *)newHV());
+
+        /* Check these returned scalar value * for NULL ( failed hv_store() ) */
+        sv_type  = (SV *)hv_store(token_hash, "type",  4, newSVpv(type,  0), 0);
+        sv_value = (SV *)hv_store(token_hash, "value", 5, newSVpv(value, 0), 0);
+        if ( !sv_type || !sv_value )
+        {
+            #ifdef __DEBUG
+            perror("\tDEBUG: hv_store(): Error constructing hash");
+            #endif //__DEBUG
+
+            /* Failed to build hash, return NULL(undef) */
+            return NULL;
+        }
+
+        return token_hash;
+    }
+    else
+    {
+        return NULL;
+    }   
+}
 
 /*********************************
  * version.c
@@ -606,11 +633,49 @@ int _blkid_parse_version_string(const char *ver_string)
     return blkid_parse_version_string(ver_string);
 }
 
-/* /\* extern int blkid_get_library_version(const char **ver_string, const char **date_string) *\/ */
-/* int _blkid_get_library_version(const char **ver_string, const char **date_string) */
-/* { */
-/*     //TODO: complete */
-/* } */
+/* extern int blkid_get_library_version(const char **ver_string, const char **date_string) */
+HV *_blkid_get_library_version(void)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_get_library_version()\n");
+    #endif //__DEBUG
+
+    int rc              = 0;
+    const char *version = NULL;
+    const char *date    = NULL;
+    HV   *version_hash  = NULL;
+
+    /* Used to check 'hv_store' return vals later */
+    SV   *sv_version, *sv_date, *sv_raw = NULL;
+    
+    /* If everything looks OK, use PerlAPI to build a hash type and a ptr to it,
+     * otherwise send back a NULL(undef) */
+    rc = blkid_get_library_version(&version, &date);
+    if ( version && date && (rc > 0) )
+    {
+        version_hash = (HV *)sv_2mortal( (SV *)newHV() );
+
+        /* We check the returns here, 'sv' vars, to make sure that the hash
+         * has been built properly, if not return a NULL(undef) */
+        sv_version  = (SV *)hv_store( version_hash, "version",  7, newSVpv(version, 0), 0 );
+        sv_date     = (SV *)hv_store( version_hash, "date",     4, newSVpv(date,    0), 0 );
+        sv_raw      = (SV *)hv_store( version_hash, "raw",      3, newSViv(rc),         0 );
+        if (!sv_version || !sv_date || !sv_raw)
+        {
+            #ifdef __DEBUG
+            perror("\tDEBUG: hv_store(): Error constructing hash");
+            #endif //__DEBUG
+
+            return NULL;
+        }
+
+        return version_hash;
+    }
+    else
+    {
+        return NULL;
+    }   
+}
 
 
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs        PREFIX = _blkid_
@@ -727,6 +792,8 @@ Device _blkid_find_dev_with_tag(cache, type, value)
                        const char *   type
                        const char *   value
 
+HV *_blkid_parse_tag_string(token)
+                       const char *   token
 
     
 ######################################################
@@ -735,10 +802,11 @@ Device _blkid_find_dev_with_tag(cache, type, value)
 int _blkid_parse_version_string(ver_string)
                        const char *   ver_string
 
+HV *_blkid_get_library_version()
 
 
 ##########################################################################################################
-### Object resource cleanup
+### Object Resource Cleanup
 ###
 ###
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::Cache            PREFIX = _blkid_
@@ -747,7 +815,7 @@ void _blkid_DESTROY(cache)
                        Cache          cache
                    CODE:
                        printf("In Cache::DESTROY\n");
-                       free(cache);
+                       Safefree(cache);
 
 
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::Device           PREFIX = _blkid_
