@@ -7,7 +7,6 @@ WriteMakefile(
     NAME         => 'Device::Blkid::E2fsprogs',
     VERSION_FROM => 'lib/Device/Blkid/E2fsprogs.pm',
     PREREQ_PM    => {
-        'Data::Dump'    => '0',
         'Exporter'      => '0',
         'Test::More'    => '0',
         'Test::Builder' => '0',
