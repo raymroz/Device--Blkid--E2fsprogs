@@ -1,6 +1,6 @@
 package Device::Blkid::E2fsprogs;
 
-our $VERSION = '0.12';
+our $VERSION = '0.14';
 
 use 5.008000;
 use strict;

@@ -1,4 +1,4 @@
-Device::Blkid::E2fsprogs version 0.12
+Device::Blkid::E2fsprogs version 0.14
 =====================================
 
 NOTE: This library only exposes the older e2fsprogs versions of libblkid ( numbered 1.xx.x)
