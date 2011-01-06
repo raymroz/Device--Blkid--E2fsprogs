@@ -162,12 +162,12 @@ was shipping as a part of the e2fsprogs package, the number of calls present in 
 expanded from the 17 in the original release of the library back in 2003 to 24 when it was
 migrated over to the util-linux-ng package in early 2009. This module supports all 24 calls
 from the most recent iteration of this run. I will, in an upcoming version of this module,
-provide a means for configuring this package for a target release of libblkid by way of the
-in package Makefile.PL, but for now it supports the entire breadth of calls.
+provide a means for configuring this package for a target release of libblkid by way of
+passing arguments to Makefile.PL, but for now it supports the entire breadth of calls.
 
 =head2 DEPENDENCIES
 
-L<E2fsprogs project home page|http://e2fsprogs.sourceforge.net/>
+L<E2fsprogs v1.33-v1.41.4|http://e2fsprogs.sourceforge.net/>
 
 =head2 EXPORT
 
@@ -383,31 +383,25 @@ at your option, any later version of Perl 5 you may have available.
 
 =head1 TODO
 
-For starters, after I get the initial kinks ironed out, I will be stripping much of the
-C preprocessor stuff and assertions. I tend to go heavy on that sort of thing during early
-build and test but I will get much of it cleaned up in the week or two ahead.
-
-Remove much of the debug/trace code and C preprocessor lines.
-
-Implement an even more Perlish design.
+After initial testing has been completed, stip much of the C preprocessor trace lines
+and assertions.
 
 Add support for additional versions of the e2fsprogs libblkid and provide for a means to
 build the library for multiple version targets by passing args in to Makefile.PL.
+
+Consider eliminating redundant calls and implementing an even more 'Perlish' design.
 
 Test scripts, test scripts, test scripts.
 
 =head1 CREDITS
 
-First and foremost I would like to thank Bastian for his L<Device::Blkid>. Your POD
-really proved helpful at times as the documentation for libblkid can be rather scant and
-your code was in places inspirational (even though I went in the C direction and you in
-the XSUB one :).  Thanks!
+I would like to thank Bastian Friedrich for his L<Device::Blkid>. Given the scant supply
+of documentation available on libblkid, especially the older, e2fsprogs-based versions,
+his POD proved quite helpful as a source of documentation.
 
-Secondly, I would like to thank Larry McInnis for the extra hardware on which I could
-code and test this. I currently have most of my hardware tied up for other purposes so
-writing a Perl interface to an e2fsprogs build of libblkid was proving a hassle on the
-latest and greatest Debian offering. With a laptop he ponied up, I had Fedora Core 10
-installed and was able to better test against the desired version.
+I would also like to thank Larry McInnis for the loan of some hardware on which to develop.
+Most everything I have had been tied up and developing on the latest and greatest version
+of Debian didn't make much sense.
 
 =head1 BUGS
 
