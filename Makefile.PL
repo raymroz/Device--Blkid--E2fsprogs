@@ -15,7 +15,7 @@ WriteMakefile(
         $] >= 5.005
         ? (
             ABSTRACT_FROM => 'lib/Device/Blkid/E2fsprogs.pm',
-            AUTHOR        => 'Raymond Mroz <rmroz@cpan.org>'
+            AUTHOR        => 'Raymond Mroz <mroz@cpan.org>'
           )
         : ()
     ),
