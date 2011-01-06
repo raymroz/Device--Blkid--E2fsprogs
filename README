@@ -60,7 +60,7 @@ in package Makefile.PL, but for now it supports the entire breadth of calls.
 
 INSTALLATION
 
-To install this module type the following:
+For a standard installation of this module type the following:
 
    perl Makefile.PL
    make
@@ -69,30 +69,42 @@ To install this module type the following:
 
 DEPENDENCIES
 
-Perl 5.10.0
+Perl 5.8.0
 
 This module also requires these other modules and libraries:
 
-  e2fsprogs (pre v1.44)
+E2fsprogs v1.33-v1.41
 
 DEBUGGING and REPORTING A BUG
 
 If you have any problems with the functioning of this library, please contact me at my CPAN
 address at mroz@cpan.org. Please be sure and include a list of packages installed on your system
 or at least the exact version of e2fsprogs which you have installed. Also, please build and
-install a DEBU build of this library as detailed below, execute the application which is using
+install a debug build of this library as detailed below, execute the application which is using
 this package and failing, and send me the verbose debugging output from the DEBUG build of this
 package.
 
-Should you wish to build a debug build of this library, please edit the Makefile.PL file and
-set the __DEBUG DEFINE flag as is shown in the file. After setting, rebuild the library as per
-The INSTALLATION instructions above. The debug build will produce much more verbose and chatty
-output to STDOUT detailing what is talking place in the underlying C codes. Please be sure and
-include all of this verbose output along with any problems you are having with this package. If
-you find any problems with this package and wish to submit a patch, please send the unified diff
-to my CPAN address including full patch instructions as well as a description of what issue or
-bug you have found and addressed. Please patch as per recommended best practices found in the
-patch(1) man page, under "NOTES FOR PATCH SENDERS".
+There are two ways to produce a debug build of this module package. The first, and easiest, is
+to pass a debug DEFINE to the Makefile.PL file when configuring the package for installation.
+To install a DEBUG build in this way, type the following from the top level of this package:
+
+    perl Makefile.PL DEFINE=-D__DEBUG
+    make
+    make test
+    make install
+
+The second method is to edit the Makefile.PL file itself and to add the '-D__DEBUG' define to
+the DEFINE argument of the WriteMakefile method found in the file (see the comments inside the
+file for additional details. Should you run a DEBUG build of this package you will note a much
+higher level of verbosity in the output from the execution of the library. Please capture and
+submit any and all of this additional verbosity to me at my CPAN address making sure to include
+a complete description of the abhorrent behavior you have or are observing while using this
+package.
+
+Furthermore, If you find any problems with this package and wish to submit a patch, please
+send the unified diff to my CPAN address including full patch instructions as well as a
+description of what issue or bug you have found and addressed. Please patch as per recommended
+best practices found in the patch(1) man page, under "NOTES FOR PATCH SENDERS".
   
 COPYRIGHT AND LICENCE
 
@@ -104,8 +116,10 @@ at your option, any later version of Perl 5 you may have available.
 
 THANKS
 
-Thanks to Friedrich for inspiration, especially your POD; its saved me hours of just pounding
-documenting calls in straight C into the lib.  Thanks.
+Thanks to Bastian for all of is work on Device::Blkid, I was especially appreciative of your
+POD as libblkid itself is not terribly well documented. While I did make a large number of my
+own straight test calls in C against the library your documentation kept me in the right
+direction. Thanks.
 
 BUGS
 
