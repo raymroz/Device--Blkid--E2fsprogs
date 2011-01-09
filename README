@@ -1,4 +1,4 @@
-Device::Blkid::E2fsprogs version 0.14
+Device::Blkid::E2fsprogs version 0.16
 =====================================
 
 NOTE: This library only exposes the older e2fsprogs versions of libblkid ( numbered 1.xx.x)
@@ -88,10 +88,10 @@ There are two ways to produce a debug build of this module package. The first, a
 to pass a debug DEFINE to the Makefile.PL file when configuring the package for installation.
 To install a DEBUG build in this way, type the following from the top level of this package:
 
-    perl Makefile.PL DEFINE=-D__DEBUG
-    make
-    make test
-    make install
+   perl Makefile.PL DEFINE=-D__DEBUG
+   make
+   make test
+   make install
 
 The second method is to edit the Makefile.PL file itself and to add the '-D__DEBUG' define to
 the DEFINE argument of the WriteMakefile method found in the file (see the comments inside the
@@ -119,7 +119,8 @@ THANKS
 Thanks to Bastian for all of is work on Device::Blkid, I was especially appreciative of your
 POD as libblkid itself is not terribly well documented. While I did make a large number of my
 own straight test calls in C against the library your documentation kept me in the right
-direction. Thanks.
+direction and saved me a load of time by allowing me to concentrate my efforst in the right
+place. Thanks.
 
 BUGS
 
