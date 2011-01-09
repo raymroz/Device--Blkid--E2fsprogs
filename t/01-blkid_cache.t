@@ -5,7 +5,7 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use Test::More tests => 5;
+use Test::More tests => 3;
 BEGIN { use_ok( 'Device::Blkid::E2fsprogs', ':funcs' ) };
 
 #########################
