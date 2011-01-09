@@ -1,6 +1,6 @@
 package Device::Blkid::E2fsprogs;
 
-our $VERSION = '0.14';
+our $VERSION = '0.16';
 
 use 5.008000;
 use strict;
@@ -209,7 +209,8 @@ Get a valid device structure, either from the cache or by probing the block devi
 
 =item C<put_cache($cache)>
 
-Write any changes to the blkid cache file.
+Write any changes to the blkid cache file and explicitly frees associated resources. C<put_cache($cache)>
+should be called after you have been doing any work with a cache object.
 
 =item C<get_cache($filename)>
 
@@ -277,7 +278,7 @@ Throws exception on failure to allocate the device object.
 =item C<get_dev_size(int $fd)>
 
 Given a device object passed in over a file descriptor, this function returns the size of that device.
-Please note, this is a file descriptor and NOT a Perl file handle! (thanks for the note Bastian).  Please
+Please note, this is a file descriptor and NOT a Perl file handle.  Please
 see POSIX::open in perldoc for further details.
 
 =item C<known_fstype($fstype)>
@@ -348,9 +349,9 @@ string, sans decimals.
 
 =item C<get_library_version()>
 
-Returns a hash reference containing the libblkid library version and release date as well
-as a raw integer representation of the standard dotted-decimal formatted version string
-(see L</parse_version_string> above). Returns undef on failure.
+Returns a hash reference containing the libblkid library version and release date as well as a raw integer
+representation of the standard dotted-decimal formatted version string (see L</parse_version_string> above).
+Returns undef on failure.
 
   { version => '1.41.4', date => '27-Jan-2009', raw => '1414' }  
 
@@ -377,13 +378,13 @@ Raymond Mroz, E<lt>mroz@cpan.org<gt>
 
 Copyright (C) 2010 by Raymond Mroz
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.10.1 or,
-at your option, any later version of Perl 5 you may have available.
+This library is free software; you can redistribute it and/or modify it under the same
+terms as Perl itself, either Perl version 5.10.1 or, at your option, any later version
+of Perl 5 you may have available.
 
 =head1 TODO
 
-After initial testing has been completed, stip much of the C preprocessor trace lines
+After initial testing has been completed, strip much of the C preprocessor trace lines
 and assertions.
 
 Add support for additional versions of the e2fsprogs libblkid and provide for a means to
@@ -397,7 +398,8 @@ Test scripts, test scripts, test scripts.
 
 I would like to thank Bastian Friedrich for his L<Device::Blkid>. Given the scant supply
 of documentation available on libblkid, especially the older, e2fsprogs-based versions,
-his POD proved quite helpful as a source of documentation.
+his POD proved quite helpful as a source of documentation on the library and saved me a
+load of time.  Thanks!
 
 I would also like to thank Larry McInnis for the loan of some hardware on which to develop.
 Most everything I have had been tied up and developing on the latest and greatest version
@@ -412,5 +414,9 @@ a number of memory allocations. While these allocations are done inside of libbl
 I do make every attempt to free the memory explicitly when I am done with it. That said, leaks
 are possible. Please report any issues as is detailed above.
 
+=head1 DIRECTION
 
-=cut
+This is an early release of this module. It and its interface are subject to change at any
+time. Please refer to all package documentation before reporting any problems.
+
+=Cut
