@@ -20,3 +20,15 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
           two iterator objects are requested from the lib.
         - Modified and reogranized README somewhat
         - Removed Data::Dump dependency from Makefile.PL
+
+0.14  Wed Jan  5 19:11:04 AST 2011
+        - Additional fixes to POD
+        - README updated with build and debug build instructions
+        - Makefile.PL, author email corrected
+ 
+0.16  Sun Jan  9 09:16:04 AST 2011
+        - Added Devel::CheckLib
+        - Modified stock Devel::CheckLib to verify libblkid version < version 2.00.0 (util-linux-ng versions)
+        - Some POD and README tweaks
+        - Makefile.PL changes for Devel::Checklib (defaults not suitable for my needs)
+        - MANIFEST updated with new file additions
