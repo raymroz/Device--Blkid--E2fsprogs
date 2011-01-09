@@ -1,3 +1,25 @@
+use lib qw(inc);
+use Devel::CheckLib;
+
+# This next section is for Devel::CheckLib. I am taking this further. As well as checking for the existance of the blkid
+# library, I am also going to make a call on the lib to get version data which is used to set a DEFINE for the C
+# preprocessor. This will provide for multiple version support.
+
+check_lib_version_or_exit (
+    function => '
+        const char *vers = NULL;
+        const char *date = NULL;
+        int vernum = 0;
+        vernum = blkid_get_library_version(&vers, &date);
+        if (vernum >= 2000)
+            return(1); 
+        return (0);
+        ',
+    incpath => '/usr/include/blkid',
+    lib     => 'blkid',
+    header  => [ 'blkid.h', 'stdio.h', 'stdlib.h', 'string.h' ],
+);
+
 use 5.008000;
 use ExtUtils::MakeMaker;
 
