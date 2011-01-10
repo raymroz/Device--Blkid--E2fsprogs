@@ -38,7 +38,6 @@ typedef struct blkid_struct_dev_iterate *DevIter;
 /* extern void blkid_put_cache(blkid_cache cache) */
 void _blkid_put_cache(Cache cache)
 {
-    //TODO: sort this routine out
     #ifdef __DEBUG
     printf("\tDEBUG: _blkid_put_cache()\n");
     printf("\tDEBUG: arg(1): cache_address(struct):%p\n", cache);
@@ -814,7 +813,6 @@ MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::Cache  
 void _blkid_DESTROY(cache)
                        Cache          cache
                    CODE:
-                       printf("In Cache::DESTROY\n");
                        Safefree(cache);
 
 
@@ -823,7 +821,6 @@ MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::Device 
 void _blkid_DESTROY(device)
                        Device         device
                    CODE:
-                       printf("In Device::DESTROY\n");
                        free(device);
 
 
@@ -832,7 +829,6 @@ MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::DevIter
 void _blkid_DESTROY(iter)
                        DevIter        iter
                    CODE:
-                       printf("In DevIter::DESTROY\n");
                        free(iter);
 
 
@@ -841,5 +837,4 @@ MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::TagIter
 void _blkid_DESTROY(iter)
                        TagIter        iter
                    CODE:
-                       printf("In TagIter::DESTROY\n");
                        free(iter);
