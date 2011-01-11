@@ -32,3 +32,12 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
         - Some POD and README tweaks
         - Makefile.PL changes for Devel::Checklib (defaults not suitable for my needs)
         - MANIFEST updated with new file additions
+
+0.18  Tue Jan 11 10:29:19 AST 2011
+        - Modified Devel::CheckLib to make calls on libblkid to get version data and return a -D compiler
+          define used to conditionally compile a version specific target of this package
+        - Modified Makefile.PL to work with changes to Devel::CheckLib to support targeted module versions
+        - Re-ordered E2fsprogs.xs file. Functions now ordered in order of their appearance by version
+        - Added C preprocessor directives to E2fsprogs.xs to provide for targeted version builds
+        - Updated README with details about targetting versions and version history of libblkid
+        = Updated lib/Device/Blkid/E2fsprogs.pm POD with details about libblkid version history and targeting

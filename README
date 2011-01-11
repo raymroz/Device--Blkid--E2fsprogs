@@ -58,6 +58,26 @@ from the most recent iteration of this run. I will, in an upcoming version of th
 provide a means for configuring this package for a target release of libblkid by way of the
 in package Makefile.PL, but for now it supports the entire breadth of calls.
 
+E2FSPROGS-LIBBLKID VERSION HISTORY
+
+Libblkid first appeared in version 1.33 of the e2fsprogs package back in 2003. The initial
+iteration of the library exposed 17 function calls as part of its API. When libblkid stopped
+shipping with the e2fsprogs package, the API call count was at 25 functions which had been a
+part of the API since version 1.40 of e2fsprogs. The API history is as follows:
+
+   v1.33  -  17 calls
+   v1.34  -  18 calls
+   v1.36  -  21 calls
+   v1.38  -  24 calls
+   v1.40  -  25 calls
+
+In version 1.36 of libblkid two functions appeared which returned version information about
+the library, those were:
+
+   int blkid_parse_version_string(const char *ver_string);
+   int blkid_get_library_version(const char **ver_string, const char **date_string);
+   
+
 INSTALLATION
 
 For a standard installation of this module type the following:
@@ -67,6 +87,17 @@ For a standard installation of this module type the following:
    make test
    make install
 
+-- Libblkid version detection --
+
+  This package has made use of a customized Devel::CheckLib module and Makefile.PL in an attempt
+  to detect the version of libblkid currently installed on the target system and to then generate
+  a PerlXS interface which directly targets and matches the API interface of that libblkid version.
+  This process is expected to work on all versions of libblkid later than v1.35. Should you have
+  any problems with this process, evident either in running the Makefile.PL or in running make on
+  its resulting Makefile, please see the Makefile.PL as well as the E2fsprogs.xs file to troubleshoot.
+  If you wish to report any problems with this version detection, please include any output from the
+  installation process as well as a copy of your /usr/include/blkid/blkid.h file.
+   
 DEPENDENCIES
 
 Perl 5.8.0
@@ -74,6 +105,14 @@ Perl 5.8.0
 This module also requires these other modules and libraries:
 
 E2fsprogs v1.33-v1.41
+
+* Note: In order to install this package on systems running a version of libblkid older than
+        version 1.36, you will be required to manually edit the Makefile.PL, adding the proper
+        define CFLAG(s) for gcc as well as determine which function calls are present in the API
+        exposed by the version of your particular libblkid and either comment out or remove
+        them from the E2fsprogs.xs file.  Keep in mind that the libblkid funtions appear in
+        two seperate sections of that file; in the top half, which is the C language section
+        and at the bottom, the Perl XSUB section.
 
 DEBUGGING and REPORTING A BUG
 
