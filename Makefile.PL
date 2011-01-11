@@ -16,7 +16,9 @@ use Devel::CheckLib;
 # Version 1.34 (134) - 18 API calls - NOT supported at this time, no calls return a library version
 # Version 1.33 (133) - 17 API calls - NOT supported at this time, no calls return a library version
 
-check_lib_version_or_exit (
+my $API_DEFINE;
+
+$API_DEFINE = check_lib_version_or_exit (
     function => '
         const char *vers = NULL;
         const char *date = NULL;
@@ -39,6 +41,7 @@ check_lib_version_or_exit (
 
 use 5.008000;
 use ExtUtils::MakeMaker;
+
 
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
@@ -65,7 +68,7 @@ WriteMakefile(
     # line below, as here:      DEFINE  =>  '-D__DEBUG', or uncomment
     # the line below.
     # DEFINE => '-D__DEBUG',
-    DEFINE => '',
+    DEFINE => $API_DEFINE,
     INC    => '-I.',
 
     # Un-comment this if you add C files to link with later:
