@@ -16,23 +16,32 @@ use Devel::CheckLib;
 # Version 1.34 (134) - 18 API calls - NOT supported at this time, no calls return a library version
 # Version 1.33 (133) - 17 API calls - NOT supported at this time, no calls return a library version
 
-my $API_DEFINE;
+# Note: The blkid_get_library_version() call modifies both its parameters (C strings)
+# and returns an 'integerized' version based upon the real, string-based version. We
+# use this below to determine and return a version type. All versions above 1.40.1
+# return a 4 digit integer and since the return type is only a single WORD in width,
+# we need to drop the last digit from versions > 2.00.0. Also note, the get version API
+# calls first appeared in version 1.36 of libblkid so versions older than this are not
+# currently supported. See DEFINE argument of WriteMakefile below.
 
-$API_DEFINE = check_lib_version_or_exit (
+# TODO: Support versions of libblkid < 1.36 in a future spin
+
+my $api_define;
+$api_define = check_lib_version_or_exit (
     function => '
         const char *vers = NULL;
         const char *date = NULL;
         int vernum = 0;
         vernum = blkid_get_library_version(&vers, &date);
         if (vernum >= 2000)
-            return(200); /* Can only return 1 byte */
+            return(200); /* Return value only 1 WORD in width */
         if (vernum >= 140)
             return(140);
         if (vernum >= 138)
             return(138);
         if (vernum >= 136)
             return(136); 
-        return (-1);
+        return (-1); /* Version is < 1.36, not currently supporting */
         ',
     incpath => '/usr/include/blkid',
     lib     => 'blkid',
@@ -67,8 +76,12 @@ WriteMakefile(
     # To create a debug build, please add '-D__DEBUG' to the DEFINE
     # line below, as here:      DEFINE  =>  '-D__DEBUG', or uncomment
     # the line below.
-    # DEFINE => '-D__DEBUG',
-    DEFINE => $API_DEFINE,
+    # DEFINE => "$api_define -D__DEBUG"
+    # Make sure to leave the '$api_define' and keep the string double
+    # quoted to support dynamic library version detection and build targets
+    # Note: To disable version-based build targets, remove '$api_define'
+    # below and replace with any custom DEFINE directives which you require
+    DEFINE => "$api_define",
     INC    => '-I.',
 
     # Un-comment this if you add C files to link with later:
