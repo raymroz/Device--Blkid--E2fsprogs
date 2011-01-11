@@ -1,6 +1,6 @@
 package Device::Blkid::E2fsprogs;
 
-our $VERSION = '0.16';
+our $VERSION = '0.18';
 
 use 5.008000;
 use strict;
@@ -165,9 +165,29 @@ from the most recent iteration of this run. I will, in an upcoming version of th
 provide a means for configuring this package for a target release of libblkid by way of
 passing arguments to Makefile.PL, but for now it supports the entire breadth of calls.
 
+=head2 INSTALLATION NOTES
+
+This package has made use of a customized Devel::CheckLib module and Makefile.PL in an attempt
+to detect the version of libblkid currently installed on the target system and to then generate
+a PerlXS interface which directly targets and matches the API interface of that libblkid
+version. This process is expected to work on all versions of libblkid later than v1.35.
+Should you have any problems with this process, evident either in running the Makefile.PL
+or in running make only its resulting Makefile, please see the Makefile.PL as well as the
+E2fsprogs.xs file to troubleshoot. If you wish to report any problems with this version
+detection, please include any output from their installation process as well as a copy of
+your /usr/include/blkid/blkid.h file.
+
 =head2 DEPENDENCIES
 
 L<E2fsprogs v1.33-v1.41.4|http://e2fsprogs.sourceforge.net/>
+
+In order to install this package on systems running a version of libblkid older than version 1.36,
+you will be required to manually edit the Makefile.PL, adding the proper define CFLAG for gcc as
+well as determine which function calls are present in the API exposed by the version of your
+particular libblkid and either comment out or remove them from the E2fsprogs.xs file.  Keep in
+mind that the libblkid funtions appear in two seperate sections of that file; in the top half,
+which is the C language section as well as the bottom section, the Perl XSUB section.
+
 
 =head2 EXPORT
 
