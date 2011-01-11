@@ -30,12 +30,7 @@ typedef struct blkid_struct_dev *Device;
 typedef struct blkid_struct_tag_iterate *TagIter;
 typedef struct blkid_struct_dev_iterate *DevIter;
 
-/*********************************
- * cache.c
- *
- *********************************/
 
-#ifdef __API_1_38
 /* extern void blkid_put_cache(blkid_cache cache) */
 void _blkid_put_cache(Cache cache)
 {
@@ -68,12 +63,6 @@ Cache _blkid_get_cache(const char *filename)
 
     return cache;
 }
-
-
-/*********************************
- * dev.c
- *
- *********************************/
 
 /* extern const char *blkid_dev_devname(blkid_dev dev) */
 const char *_blkid_dev_devname(Device device)
@@ -115,32 +104,6 @@ DevIter _blkid_dev_iterate_begin(Cache cache)
         perror("\tDEBUG: blkid_dev_iterate_begin(): error retrieving iterator");
         #endif
         croak("Error retrieving device iterator object: %s\n", strerror(errno));
-    }
-
-    return iter;
-}
-
-/* extern int blkid_dev_set_search(blkid_iterate iter, char *search_type, char *search_value) */
-DevIter _blkid_dev_set_search(DevIter iter, char *search_type, char *search_value)
-{
-    #ifdef __DEBUG
-    printf("\tDEBUG: _blkid_dev_set_search()\n");
-    printf("\tDEBUG: arg(3): iter_address(struct):%p, srch_type:%s, srch_value:%s\n", iter, search_type, search_value);
-    assert(iter);
-    assert(search_type);
-    assert(search_value);
-    #endif
-
-    int rc = 0;
-
-    rc = blkid_dev_set_search(iter, search_type, search_value);
-    if (rc != 0)
-    {
-        #ifdef __DEBUG
-        perror("\tDEBUG: blkid_dev_set_search(): Error while applying search filter on iterator object");
-        #endif
-
-        return NULL;
     }
 
     return iter;
@@ -188,11 +151,6 @@ void _blkid_dev_iterate_end(DevIter iter)
     blkid_dev_iterate_end(iter);
 }
 
-/*********************************
- * devno.c
- *
- *********************************/
-
 /* extern char *blkid_devno_to_devname(dev_t devno) */
 char *_blkid_devno_to_devname(dev_t devno)
 {
@@ -205,11 +163,6 @@ char *_blkid_devno_to_devname(dev_t devno)
     /* Return devname or NULL(undef in Perl town) */
     return blkid_devno_to_devname(devno);
 }
-
-/*********************************
- * devname.c
- *
- *********************************/
 
 /* extern int blkid_probe_all(blkid_cache cache) */
 Cache _blkid_probe_all(Cache cache)
@@ -235,27 +188,6 @@ Cache _blkid_probe_all(Cache cache)
     }
 }
 
-/* extern int blkid_probe_all_new(blkid_cache cache) */
-Cache _blkid_probe_all_new(Cache cache)
-{
-    #ifdef __DEBUG
-    printf("\tDEBUG: _blkid_probe_all_new()\n");
-    printf("\tDEBUG: arg(1): cache_address:%p\n", cache);
-    assert(cache);
-    #endif //__DEBUG
-
-    /* Return cache struct(object) on success, NULL(undef) on fail */
-    if ( blkid_probe_all_new(cache) != 0 )
-    {
-        #ifdef __DEBUG
-        perror("\tDEBUG: blkid_probe_all_new(): Error while probing for new devices in cache");
-        #endif //__DEBUG
-
-        return NULL;
-    }
-    
-    return cache;   
-}
 
 /* extern blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags) */
 Device _blkid_get_dev(Cache cache, const char *devname, int flags)
@@ -281,10 +213,6 @@ Device _blkid_get_dev(Cache cache, const char *devname, int flags)
     return device;
 }
 
-/*********************************
- * getsize.c
- *
- *********************************/
 
 /* extern blkid_loff_t blkid_get_dev_size(int fd) */
 blkid_loff_t _blkid_get_dev_size(int fd)
@@ -302,72 +230,6 @@ blkid_loff_t _blkid_get_dev_size(int fd)
     return blkid_get_dev_size(fd);
 }
 
-/*********************************
- * probe.c
- *
- *********************************/
-
-/* int blkid_known_fstype(const char *fstype) */
-const char *_blkid_known_fstype(const char *fstype)
-{
-    #ifdef __DEBUG
-    printf("\tDEBUG: _blkid_known_fstype()\n");
-    printf("\tDEBUG: arg(1): fstype:%s\n", fstype);
-    assert(fstype);
-    #endif //__DEBUG
-
-    int rc = 0;
-
-    /* Native function returns 1 if file system is supported by lib, 0 otherwise.
-     * I return the file system string if it is supported and undef if not so as
-     * to have a more Perlish feel. */
-    rc = blkid_known_fstype(fstype);
-    if (rc == 0)
-    {
-        #ifdef __DEBUG
-        printf("\tDEBUG: blkid_known_fstype()\n");
-        printf("\tDEBUG: Unknown file system type %s\n", fstype);
-        #endif //__DEBUG
-
-        return NULL;
-    }
-
-    return fstype;
-}
-
-/* extern blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev) */
-Device _blkid_verify(Cache cache, Device device)
-{
-    #ifdef __DEBUG
-    printf("\tDEBUG: _blkid_verify()\n");
-    printf("\tDEBUG: arg(2): cache_address:%p, device_address:%p\n", cache, device);
-    assert(cache);
-    assert(device);
-    #endif //__DEBUG
-
-    Device tmp_device = NULL;
-
-    /* Returns NULL if unable to verify device agaisnt current devname, otherwise an
-     * identical copy of the device is returned to mark a pass. Return a NULL (or undef
-     * to Perl on failure, a copy of the Device object on success */
-    tmp_device = blkid_verify(cache, device);
-    if (tmp_device == NULL)
-    {
-        #ifdef __DEBUG
-        printf("\tDEBUG: _blkid_verify()::blkid_verify()\n");
-        printf("\tDEBUG: Unable to verify block device\n");
-        #endif //__DEBUG
-
-        return NULL;
-    }
-
-    return device;
-}
-
-/*********************************
- * resolve.c
- *
- *********************************/
 
 /* extern char *blkid_get_tag_value(blkid_cache cache, const char *tagname, const char *devname) */
 char *_blkid_get_tag_value(Cache cache, const char *tagname, const char *devname)
@@ -422,11 +284,6 @@ char *_blkid_get_devname(Cache cache, const char *token, const char *value)
 
     return devname;    
 }
-
-/*********************************
- * tag.c
- *
- *********************************/
 
 /* extern blkid_iterate blkid_tag_iterate_begin(blkid_dev dev) */
 TagIter _blkid_tag_iterate_begin(Device device)
@@ -508,32 +365,6 @@ void _blkid_tag_iterate_end(TagIter iter)
     blkid_tag_iterate_end(iter);
 }
 
-/* extern int blkid_dev_has_tag(blkid_dev dev, const char *type, const char *value) */
-Device _blkid_dev_has_tag(Device device, const char *type, const char *value)
-{
-    #ifdef __DEBUG
-    printf("\tDEBUG: _blkid_dev_has_tag()\n");
-    printf("\tDEBUG: args(3): device_address:%p, type:%s, value:%s\n", device, type, value);
-    assert(device);
-    assert(type);
-    assert(value);
-    #endif //__DEBUG
-
-    /* If the specified tag is not present in device, return a NULL(undef), otherwise
-     * return the device object */
-    int rc = 0;
-    rc = blkid_dev_has_tag(device, type, value);
-    if (rc == 0)
-    {
-        #ifdef __DEBUG
-        printf("\tDEBUG: Tag not present in device specified\n");
-        #endif //__DEBUG
-
-        return NULL;
-    }
-
-    return device;
-}
 
 /* extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache, const char *type, const char *value) */
 Device _blkid_find_dev_with_tag(Cache cache, const char *type, const char *value)
@@ -605,10 +436,66 @@ HV *_blkid_parse_tag_string(const char *token)
     }   
 }
 
-/*********************************
- * version.c
- *
- *********************************/
+/* VERSION 1.34 */
+
+/* int blkid_known_fstype(const char *fstype) */
+const char *_blkid_known_fstype(const char *fstype)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_known_fstype()\n");
+    printf("\tDEBUG: arg(1): fstype:%s\n", fstype);
+    assert(fstype);
+    #endif //__DEBUG
+
+    int rc = 0;
+
+    /* Native function returns 1 if file system is supported by lib, 0 otherwise.
+     * I return the file system string if it is supported and undef if not so as
+     * to have a more Perlish feel. */
+    rc = blkid_known_fstype(fstype);
+    if (rc == 0)
+    {
+        #ifdef __DEBUG
+        printf("\tDEBUG: blkid_known_fstype()\n");
+        printf("\tDEBUG: Unknown file system type %s\n", fstype);
+        #endif //__DEBUG
+
+        return NULL;
+    }
+
+    return fstype;
+}
+/* end VERSION 1.34 */
+
+#ifdef __API_1_36
+/* extern blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev) */
+Device _blkid_verify(Cache cache, Device device)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_verify()\n");
+    printf("\tDEBUG: arg(2): cache_address:%p, device_address:%p\n", cache, device);
+    assert(cache);
+    assert(device);
+    #endif //__DEBUG
+
+    Device tmp_device = NULL;
+
+    /* Returns NULL if unable to verify device agaisnt current devname, otherwise an
+     * identical copy of the device is returned to mark a pass. Return a NULL (or undef
+     * to Perl on failure, a copy of the Device object on success */
+    tmp_device = blkid_verify(cache, device);
+    if (tmp_device == NULL)
+    {
+        #ifdef __DEBUG
+        printf("\tDEBUG: _blkid_verify()::blkid_verify()\n");
+        printf("\tDEBUG: Unable to verify block device\n");
+        #endif //__DEBUG
+
+        return NULL;
+    }
+
+    return device;
+}
 
 /* extern int blkid_parse_version_string(const char *ver_string) */
 int _blkid_parse_version_string(const char *ver_string)
@@ -664,6 +551,83 @@ HV *_blkid_get_library_version(void)
     {
         return NULL;
     }   
+}
+#endif /* __API_1_36 */
+
+#ifdef __API_1_38
+/* extern int blkid_dev_set_search(blkid_iterate iter, char *search_type, char *search_value) */
+DevIter _blkid_dev_set_search(DevIter iter, char *search_type, char *search_value)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_dev_set_search()\n");
+    printf("\tDEBUG: arg(3): iter_address(struct):%p, srch_type:%s, srch_value:%s\n", iter, search_type, search_value);
+    assert(iter);
+    assert(search_type);
+    assert(search_value);
+    #endif
+
+    int rc = 0;
+
+    rc = blkid_dev_set_search(iter, search_type, search_value);
+    if (rc != 0)
+    {
+        #ifdef __DEBUG
+        perror("\tDEBUG: blkid_dev_set_search(): Error while applying search filter on iterator object");
+        #endif
+
+        return NULL;
+    }
+
+    return iter;
+}
+
+/* extern int blkid_probe_all_new(blkid_cache cache) */
+Cache _blkid_probe_all_new(Cache cache)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_probe_all_new()\n");
+    printf("\tDEBUG: arg(1): cache_address:%p\n", cache);
+    assert(cache);
+    #endif //__DEBUG
+
+    /* Return cache struct(object) on success, NULL(undef) on fail */
+    if ( blkid_probe_all_new(cache) != 0 )
+    {
+        #ifdef __DEBUG
+        perror("\tDEBUG: blkid_probe_all_new(): Error while probing for new devices in cache");
+        #endif //__DEBUG
+
+        return NULL;
+    }
+    
+    return cache;   
+}
+
+/* extern int blkid_dev_has_tag(blkid_dev dev, const char *type, const char *value) */
+Device _blkid_dev_has_tag(Device device, const char *type, const char *value)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_dev_has_tag()\n");
+    printf("\tDEBUG: args(3): device_address:%p, type:%s, value:%s\n", device, type, value);
+    assert(device);
+    assert(type);
+    assert(value);
+    #endif //__DEBUG
+
+    /* If the specified tag is not present in device, return a NULL(undef), otherwise
+     * return the device object */
+    int rc = 0;
+    rc = blkid_dev_has_tag(device, type, value);
+    if (rc == 0)
+    {
+        #ifdef __DEBUG
+        printf("\tDEBUG: Tag not present in device specified\n");
+        #endif //__DEBUG
+
+        return NULL;
+    }
+
+    return device;
 }
 #endif /* __API_1_38 */
 
