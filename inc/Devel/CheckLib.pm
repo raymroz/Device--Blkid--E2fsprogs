@@ -1,9 +1,11 @@
 # $Id: CheckLib.pm,v 1.25 2008/10/27 12:16:23 drhyde Exp $
 
-package #
-Devel::CheckLib;
+package    #
+  Devel::CheckLib;
 
-use 5.00405; #postfix foreach
+#use 5.00405; #postfix foreach
+use 5.010000;
+
 use strict;
 use vars qw($VERSION @ISA @EXPORT);
 $VERSION = '0.92';
@@ -13,14 +15,16 @@ use Text::ParseWords 'quotewords';
 use File::Spec;
 use File::Temp;
 
+use feature ':5.10';
+
 require Exporter;
-@ISA = qw(Exporter);
+@ISA    = qw(Exporter);
 @EXPORT = qw(assert_lib check_lib_or_exit check_lib check_lib_version_or_exit);
 
 # localising prevents the warningness leaking out of this module
 local $^W = 1;    # use warnings is a 5.6-ism
 
-_findcc(); # bomb out early if there's no compiler
+_findcc();        # bomb out early if there's no compiler
 
 =head1 NAME
 
@@ -170,22 +174,40 @@ returning false instead of dieing, or true otherwise.
 
 sub check_lib_version_or_exit {
     eval 'assert_lib(@_)';
-    if($@) {
-        if ( $@ =~ m/^wrong result:/) {
-            my $msg_1 = "This package is incompatible with version 2.xx.x of libblkid.\n";
-            my $msg_2 = "Please obtain Device::Blkid from CPAN for your library version.\n";
-            # my @warning = [ $msg_1, $msg_2 ];            
-            warn $msg_1, $msg_2;            
-            exit;            
+
+    given ($@) {
+        when (/^140/) {
+            say $@;
+            say "Matched on version 1.40";
+            # Version 1.40 - 25 calls
         }
-        warn $@;
-        exit;
+        default {
+            say "Default catch all";
+            exit;
+        }
     }
+
+#     if ($@) {
+
+#         if ( $@ =~ m/^wrong result:/ ) {
+#             my $msg_1 =
+#               "This package is incompatible with version 2.xx.x of libblkid.\n";
+#             my $msg_2 =
+# "Please obtain Device::Blkid from CPAN for your library version.\n";
+#             warn $msg_1, $msg_2;
+#             exit;
+#         }
+
+#         warn $@;
+#         exit;
+#     }
+
+    
 }
 
 sub check_lib_or_exit {
     eval 'assert_lib(@_)';
-    if($@) {
+    if ($@) {
         warn $@;
         exit;
     }
@@ -198,42 +220,43 @@ sub check_lib {
 
 sub assert_lib {
     my %args = @_;
-    my (@libs, @libpaths, @headers, @incpaths);
+    my ( @libs, @libpaths, @headers, @incpaths );
 
     # FIXME: these four just SCREAM "refactor" at me
-    @libs = (ref($args{lib}) ? @{$args{lib}} : $args{lib}) 
-        if $args{lib};
-    @libpaths = (ref($args{libpath}) ? @{$args{libpath}} : $args{libpath}) 
-        if $args{libpath};
-    @headers = (ref($args{header}) ? @{$args{header}} : $args{header}) 
-        if $args{header};
-    @incpaths = (ref($args{incpath}) ? @{$args{incpath}} : $args{incpath}) 
-        if $args{incpath};
+    @libs = ( ref( $args{lib} ) ? @{ $args{lib} } : $args{lib} )
+      if $args{lib};
+    @libpaths = ( ref( $args{libpath} ) ? @{ $args{libpath} } : $args{libpath} )
+      if $args{libpath};
+    @headers = ( ref( $args{header} ) ? @{ $args{header} } : $args{header} )
+      if $args{header};
+    @incpaths = ( ref( $args{incpath} ) ? @{ $args{incpath} } : $args{incpath} )
+      if $args{incpath};
 
     # work-a-like for Makefile.PL's LIBS and INC arguments
     # if given as command-line argument, append to %args
     for my $arg (@ARGV) {
         for my $mm_attr_key (qw(LIBS INC)) {
-            if (my ($mm_attr_value) = $arg =~ /\A $mm_attr_key = (.*)/x) {
-            # it is tempting to put some \s* into the expression, but the
-            # MM command-line parser only accepts LIBS etc. followed by =,
-            # so we should not be any more lenient with whitespace than that
+            if ( my ($mm_attr_value) = $arg =~ /\A $mm_attr_key = (.*)/x ) {
+
+                # it is tempting to put some \s* into the expression, but the
+                # MM command-line parser only accepts LIBS etc. followed by =,
+                # so we should not be any more lenient with whitespace than that
                 $args{$mm_attr_key} .= " $mm_attr_value";
             }
         }
     }
 
     # using special form of split to trim whitespace
-    if(defined($args{LIBS})) {
-        foreach my $arg (split(' ', $args{LIBS})) {
-            die("LIBS argument badly-formed: $arg\n") unless($arg =~ /^-l/i);
-            push @{$arg =~ /^-l/ ? \@libs : \@libpaths}, substr($arg, 2);
+    if ( defined( $args{LIBS} ) ) {
+        foreach my $arg ( split( ' ', $args{LIBS} ) ) {
+            die("LIBS argument badly-formed: $arg\n") unless ( $arg =~ /^-l/i );
+            push @{ $arg =~ /^-l/ ? \@libs : \@libpaths }, substr( $arg, 2 );
         }
     }
-    if(defined($args{INC})) {
-        foreach my $arg (split(' ', $args{INC})) {
-            die("INC argument badly-formed: $arg\n") unless($arg =~ /^-I/);
-            push @incpaths, substr($arg, 2);
+    if ( defined( $args{INC} ) ) {
+        foreach my $arg ( split( ' ', $args{INC} ) ) {
+            die("INC argument badly-formed: $arg\n") unless ( $arg =~ /^-I/ );
+            push @incpaths, substr( $arg, 2 );
         }
     }
 
@@ -242,130 +265,142 @@ sub assert_lib {
     my @wrongresult;
     my @use_headers;
 
+    my @blkid_version;
+
     # first figure out which headers we can't find ...
     for my $header (@headers) {
         push @use_headers, $header;
-        my($ch, $cfile) = File::Temp::tempfile(
-            'assertlibXXXXXXXX', SUFFIX => '.c'
-        );
+        my ( $ch, $cfile ) =
+          File::Temp::tempfile( 'assertlibXXXXXXXX', SUFFIX => '.c' );
         print $ch qq{#include <$_>\n} for @use_headers;
         print $ch qq{int main(void) { return 0; }\n};
         close($ch);
-        my $exefile = File::Temp::mktemp( 'assertlibXXXXXXXX' ) . $Config{_exe};
+        my $exefile = File::Temp::mktemp('assertlibXXXXXXXX') . $Config{_exe};
         my @sys_cmd;
+
         # FIXME: re-factor - almost identical code later when linking
-        if ( $Config{cc} eq 'cl' ) {                 # Microsoft compiler
+        if ( $Config{cc} eq 'cl' ) {    # Microsoft compiler
             require Win32;
             @sys_cmd = (
-                @cc,
-                $cfile,
-                "/Fe$exefile",
-                (map { '/I'.Win32::GetShortPathName($_) } @incpaths)
+                @cc, $cfile, "/Fe$exefile",
+                ( map { '/I' . Win32::GetShortPathName($_) } @incpaths )
             );
-        } elsif($Config{cc} =~ /bcc32(\.exe)?/) {    # Borland
-            @sys_cmd = (
-                @cc,
-                (map { "-I$_" } @incpaths),
-                "-o$exefile",
-                $cfile
-            );
-        } else { # Unix-ish: gcc, Sun, AIX (gcc, cc), ...
-            @sys_cmd = (
-                @cc,
-                $cfile,
-                (map { "-I$_" } @incpaths),
-                "-o", "$exefile"
-            );
+        }
+        elsif ( $Config{cc} =~ /bcc32(\.exe)?/ ) {    # Borland
+            @sys_cmd =
+              ( @cc, ( map { "-I$_" } @incpaths ), "-o$exefile", $cfile );
+        }
+        else {    # Unix-ish: gcc, Sun, AIX (gcc, cc), ...
+            @sys_cmd =
+              ( @cc, $cfile, ( map { "-I$_" } @incpaths ), "-o", "$exefile" );
         }
         warn "# @sys_cmd\n" if $args{debug};
         my $rv = $args{debug} ? system(@sys_cmd) : _quiet_system(@sys_cmd);
-        push @missing, $header if $rv != 0 || ! -x $exefile; 
+        push @missing, $header if $rv != 0 || !-x $exefile;
         _cleanup_exe($exefile);
         unlink $cfile;
-    } 
+    }
 
     # now do each library in turn with headers
-    my($ch, $cfile) = File::Temp::tempfile(
-        'assertlibXXXXXXXX', SUFFIX => '.c'
-    );
+    my ( $ch, $cfile ) =
+      File::Temp::tempfile( 'assertlibXXXXXXXX', SUFFIX => '.c' );
     print $ch qq{#include <$_>\n} foreach (@headers);
-    print $ch "int main(void) { ".($args{function} || 'return 0;')." }\n";
+    print $ch "int main(void) { " . ( $args{function} || 'return 0;' ) . " }\n";
     close($ch);
-    for my $lib ( @libs ) {
-        my $exefile = File::Temp::mktemp( 'assertlibXXXXXXXX' ) . $Config{_exe};
+    for my $lib (@libs) {
+        my $exefile = File::Temp::mktemp('assertlibXXXXXXXX') . $Config{_exe};
         my @sys_cmd;
-        if ( $Config{cc} eq 'cl' ) {                 # Microsoft compiler
+        if ( $Config{cc} eq 'cl' ) {    # Microsoft compiler
             require Win32;
-            my @libpath = map { 
-                q{/libpath:} . Win32::GetShortPathName($_)
-            } @libpaths; 
+            my @libpath =
+              map { q{/libpath:} . Win32::GetShortPathName($_) } @libpaths;
+
             # this is horribly sensitive to the order of arguments
             @sys_cmd = (
                 @cc,
                 $cfile,
                 "${lib}.lib",
-                "/Fe$exefile", 
-                (map { '/I'.Win32::GetShortPathName($_) } @incpaths),
+                "/Fe$exefile",
+                ( map { '/I' . Win32::GetShortPathName($_) } @incpaths ),
                 "/link",
-                (map {'/libpath:'.Win32::GetShortPathName($_)} @libpaths),
+                ( map { '/libpath:' . Win32::GetShortPathName($_) } @libpaths ),
             );
-        } elsif($Config{cc} eq 'CC/DECC') {          # VMS
-        } elsif($Config{cc} =~ /bcc32(\.exe)?/) {    # Borland
+        }
+        elsif ( $Config{cc} eq 'CC/DECC' ) {    # VMS
+        }
+        elsif ( $Config{cc} =~ /bcc32(\.exe)?/ ) {    # Borland
             @sys_cmd = (
-                @cc,
-                "-o$exefile",
-                "-l$lib",
-                (map { "-I$_" } @incpaths),
-                (map { "-L$_" } @libpaths),
-                $cfile);
-        } else {                                     # Unix-ish
-                                                     # gcc, Sun, AIX (gcc, cc)
+                @cc, "-o$exefile", "-l$lib",
+                ( map { "-I$_" } @incpaths ),
+                ( map { "-L$_" } @libpaths ), $cfile
+            );
+        }
+        else {                                        # Unix-ish
+                                                      # gcc, Sun, AIX (gcc, cc)
             @sys_cmd = (
-                @cc,
-                $cfile,
-                "-o", "$exefile",
-                "-l$lib",
-                (map { "-I$_" } @incpaths),
-                (map { "-L$_" } @libpaths)
+                @cc, $cfile, "-o", "$exefile", "-l$lib",
+                ( map { "-I$_" } @incpaths ),
+                ( map { "-L$_" } @libpaths )
             );
         }
         warn "# @sys_cmd\n" if $args{debug};
-        
-        my $rv = $args{debug} ? system(@sys_cmd) : _quiet_system(@sys_cmd);                
-        
-        push @missing, $lib if $rv != 0 || ! -x $exefile;
-        push @wrongresult, $lib if ( $rv == 0 && -x $exefile && system(File::Spec->rel2abs($exefile)) != 0 ); 
+
+        # Grab output from linking
+        my $rv = $args{debug} ? system(@sys_cmd) : _quiet_system(@sys_cmd);
+
+        push @missing, $lib if $rv != 0 || !-x $exefile;
+
+        push @blkid_version, ( $? >> 8 )
+          if ( $rv == 0
+            && -x $exefile
+            && system( File::Spec->rel2abs($exefile) ) != 0 );
+
+        # Print the return value of the child process exec'd by system()
+        printf( "The return value from library calls in Makefile.PL is %d\n",
+            $? >> 8 );
 
         _cleanup_exe($exefile);
-    } 
+    }
     unlink $cfile;
 
     my $miss_string = join( q{, }, map { qq{'$_'} } @missing );
     die("Can't link/include $miss_string\n") if @missing;
-    my $wrong_string = join( q{, }, map { qq{'$_'} } @wrongresult);
-    die("wrong result: $wrong_string\n") if @wrongresult;
+
+    # my $wrong_string = join( q{, }, map { qq{'$_'} } @wrongresult);
+    # die("wrong result: $wrong_string\n") if @wrongresult;
+
+    # Throw the returned version identifier up
+    my $blkid_version = shift @blkid_version;
+    die($blkid_version) if ( $blkid_version > 0 );
+
+    # Default catch-all, unknown version, will attempt a full API build (25 calls)
+    die("Unable to determine libblkid library version, bailing");
 }
 
 sub _cleanup_exe {
     my ($exefile) = @_;
     my $ofile = $exefile;
     $ofile =~ s/$Config{_exe}$/$Config{_o}/;
-    unlink $exefile if -f $exefile;
-    unlink $ofile if -f $ofile;
+    unlink $exefile             if -f $exefile;
+    unlink $ofile               if -f $ofile;
     unlink "$exefile\.manifest" if -f "$exefile\.manifest";
-    return
+    return;
 }
-    
+
 sub _findcc {
+
     # Need to use $keep=1 to work with MSWin32 backslashes and quotes
-    my @Config_ccflags_ldflags =  @Config{qw(ccflags ldflags)};  # use copy so ASPerl will compile
-    my @flags = grep { length } map { quotewords('\s+', 1, $_ || ()) } @Config_ccflags_ldflags;
-    my @paths = split(/$Config{path_sep}/, $ENV{PATH});
-    my @cc = split(/\s+/, $Config{cc});
-    return (@cc, @flags) if -x $cc[0];
+    my @Config_ccflags_ldflags =
+      @Config{qw(ccflags ldflags)};    # use copy so ASPerl will compile
+    my @flags =
+      grep { length }
+      map { quotewords( '\s+', 1, $_ || () ) } @Config_ccflags_ldflags;
+    my @paths = split( /$Config{path_sep}/, $ENV{PATH} );
+    my @cc = split( /\s+/, $Config{cc} );
+    return ( @cc, @flags ) if -x $cc[0];
     foreach my $path (@paths) {
-        my $compiler = File::Spec->catfile($path, $cc[0]) . $Config{_exe};
-        return ($compiler, @cc[1 .. $#cc], @flags) if -x $compiler;
+        my $compiler = File::Spec->catfile( $path, $cc[0] ) . $Config{_exe};
+        return ( $compiler, @cc[ 1 .. $#cc ], @flags ) if -x $compiler;
     }
     die("Couldn't find your C compiler\n");
 }
@@ -379,24 +414,24 @@ sub _quiet_system {
     local *STDERR_SAVE;
     open STDOUT_SAVE, ">&STDOUT" or die "CheckLib: $! saving STDOUT";
     open STDERR_SAVE, ">&STDERR" or die "CheckLib: $! saving STDERR";
-    
+
     # redirect to nowhere
     local *DEV_NULL;
-    open DEV_NULL, ">" . File::Spec->devnull 
-        or die "CheckLib: $! opening handle to null device";
+    open DEV_NULL, ">" . File::Spec->devnull
+      or die "CheckLib: $! opening handle to null device";
     open STDOUT, ">&" . fileno DEV_NULL
-        or die "CheckLib: $! redirecting STDOUT to null handle";
+      or die "CheckLib: $! redirecting STDOUT to null handle";
     open STDERR, ">&" . fileno DEV_NULL
-        or die "CheckLib: $! redirecting STDERR to null handle";
+      or die "CheckLib: $! redirecting STDERR to null handle";
 
     # run system command
     my $rv = system(@cmd);
 
     # restore handles
     open STDOUT, ">&" . fileno STDOUT_SAVE
-        or die "CheckLib: $! restoring STDOUT handle";
+      or die "CheckLib: $! restoring STDOUT handle";
     open STDERR, ">&" . fileno STDERR_SAVE
-        or die "CheckLib: $! restoring STDERR handle";
+      or die "CheckLib: $! restoring STDERR handle";
 
     return $rv;
 }
