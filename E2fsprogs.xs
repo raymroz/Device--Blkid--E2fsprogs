@@ -436,7 +436,13 @@ HV *_blkid_parse_tag_string(const char *token)
     }   
 }
 
-/* VERSION 1.34 */
+/*
+ *
+ * VERSION 1.34
+ *
+ * - 20 API calls
+ *
+ */
 
 /* int blkid_known_fstype(const char *fstype) */
 const char *_blkid_known_fstype(const char *fstype)
@@ -466,6 +472,14 @@ const char *_blkid_known_fstype(const char *fstype)
     return fstype;
 }
 /* end VERSION 1.34 */
+
+/*
+ *
+ * VERSION 1.36
+ *
+ * - 21 API calls
+ *
+ */
 
 #ifdef __API_1_36
 /* extern blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev) */
@@ -554,6 +568,14 @@ HV *_blkid_get_library_version(void)
 }
 #endif /* __API_1_36 */
 
+/*
+ *
+ * VERSION 1.38
+ *
+ * - 24 API calls
+ *
+ */
+
 #ifdef __API_1_38
 /* extern int blkid_dev_set_search(blkid_iterate iter, char *search_type, char *search_value) */
 DevIter _blkid_dev_set_search(DevIter iter, char *search_type, char *search_value)
@@ -631,6 +653,14 @@ Device _blkid_dev_has_tag(Device device, const char *type, const char *value)
 }
 #endif /* __API_1_38 */
 
+/*
+ *
+ * VERSION 1.40
+ * 
+ * - 25 API calls
+ *
+ */
+
 #ifdef __API_1_40
 /* extern void blkid_gc_cache(blkid_cache cache) */
 void _blkid_gc_cache(Cache cache)
@@ -649,55 +679,41 @@ MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs        P
 
 PROTOTYPES: DISABLE
 
-######################################################
-### cache.c    
+
+ # XSUB glue prototypes
+
 
 void _blkid_put_cache(cache)
                        Cache          cache
 
+
 Cache _blkid_get_cache(filename)
                        const char *   filename 
 
-void _blkid_gc_cache(cache)
-                       Cache          cache
-
-
-######################################################
-### dev.c    
 
 const char *_blkid_dev_devname(device)
                        Device         device
 
+
 DevIter _blkid_dev_iterate_begin(cache)
                        Cache          cache
 
-DevIter _blkid_dev_set_search(iter, search_type, search_value)
-                       DevIter        iter
-                       char *         search_type
-                       char *         search_value
 
 Device _blkid_dev_next(iter)
                        DevIter        iter
+
 
 void _blkid_dev_iterate_end(iter)
                        DevIter        iter
 
 
-######################################################
-### devno.c
-
 char *_blkid_devno_to_devname(devno)
                        dev_t          devno
 
 
-######################################################
-### devname.c
-
 Cache _blkid_probe_all(cache)
                        Cache          cache
 
-Cache _blkid_probe_all_new(cache)
-                       Cache          cache
 
 Device _blkid_get_dev(cache, devname, flags)
                        Cache          cache
@@ -705,31 +721,19 @@ Device _blkid_get_dev(cache, devname, flags)
                        int            flags
 
 
-######################################################
-### getsize.c
-
 blkid_loff_t _blkid_get_dev_size(fd)
                        int            fd
 
 
-######################################################
-### probe.c
-
 const char *_blkid_known_fstype(fstype)
                        const char *   fstype
 
-Device _blkid_verify(cache, device)
-                       Cache          cache
-                       Device         device
-
-
-######################################################
-### resolve.c
 
 char *_blkid_get_tag_value(cache, tagname, devname)
                        Cache          cache
                        const char *   tagname
                        const char *   devname
+
 
 char *_blkid_get_devname(cache, token, value)
                        Cache          cache
@@ -737,41 +741,82 @@ char *_blkid_get_devname(cache, token, value)
                        const char *   value
 
 
-######################################################
-### tag.c
-
 TagIter _blkid_tag_iterate_begin(device)
                        Device         device
 
+
 HV *_blkid_tag_next(iter)
                        TagIter        iter
-    
+
+
 void _blkid_tag_iterate_end(iter)
                        TagIter        iter
 
-Device _blkid_dev_has_tag(device, type, value)
-                       Device         device
-                       const char *   type
-                       const char *   value
 
 Device _blkid_find_dev_with_tag(cache, type, value)
                        Cache          cache
                        const char *   type
                        const char *   value
 
+
 HV *_blkid_parse_tag_string(token)
                        const char *   token
 
-    
-######################################################
-### version.c
+
+ # VERSION 1.36 or 1.37
+
+
+#ifdef __API_1_36
+
+Device _blkid_verify(cache, device)
+                       Cache          cache
+                       Device         device
+
 
 int _blkid_parse_version_string(ver_string)
                        const char *   ver_string
 
+
 HV *_blkid_get_library_version()
 
+#endif
+    
 
+ # VERSION 1.38 or 1.39
+
+
+#ifdef __API_1_38
+
+DevIter _blkid_dev_set_search(iter, search_type, search_value)
+                       DevIter        iter
+                       char *         search_type
+                       char *         search_value
+
+
+Cache _blkid_probe_all_new(cache)
+                       Cache          cache
+
+
+Device _blkid_dev_has_tag(device, type, value)
+                       Device         device
+                       const char *   type
+                       const char *   value
+
+#endif
+    
+
+ # VERSION 1.40 or better
+
+
+#ifdef __API_1_40
+
+void _blkid_gc_cache(cache)
+                       Cache          cache
+
+#endif
+
+
+    
 ##########################################################################################################
 ### Object Resource Cleanup
 ###
@@ -789,7 +834,7 @@ MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::Device 
 void _blkid_DESTROY(device)
                        Device         device
                    CODE:
-                       free(device);
+                       Safefree(device);
 
 
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::DevIter          PREFIX = _blkid_
@@ -797,7 +842,7 @@ MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::DevIter
 void _blkid_DESTROY(iter)
                        DevIter        iter
                    CODE:
-                       free(iter);
+                       Safefree(iter);
 
 
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::TagIter          PREFIX = _blkid_
@@ -805,4 +850,4 @@ MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::TagIter
 void _blkid_DESTROY(iter)
                        TagIter        iter
                    CODE:
-                       free(iter);
+                       Safefree(iter);
