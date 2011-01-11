@@ -175,18 +175,25 @@ returning false instead of dieing, or true otherwise.
 sub check_lib_version_or_exit {
     eval 'assert_lib(@_)';
 
-    given ($@) {
+    my $lib_version;
+    
+    if ( $@ ) {
+        say "Trapping exception";
+        $lib_version = $@;
+    }
+    
+    given ($lib_version) {
         when (/^140/) {
-            say $@;
             say "Matched on version 1.40";
             # Version 1.40 - 25 calls
+            return ("-D__API_1_40 -D__API_1_38");
         }
         default {
             say "Default catch all";
             exit;
         }
     }
-
+}
 #     if ($@) {
 
 #         if ( $@ =~ m/^wrong result:/ ) {
@@ -202,8 +209,6 @@ sub check_lib_version_or_exit {
 #         exit;
 #     }
 
-    
-}
 
 sub check_lib_or_exit {
     eval 'assert_lib(@_)';
@@ -355,9 +360,11 @@ sub assert_lib {
             && -x $exefile
             && system( File::Spec->rel2abs($exefile) ) != 0 );
 
-        # Print the return value of the child process exec'd by system()
-        printf( "The return value from library calls in Makefile.PL is %d\n",
-            $? >> 8 );
+        # DEBUG printf
+        if ( $args{debug} ) {
+            printf( "The return value from library calls in Makefile.PL is %d\n",
+                    $? >> 8 );
+        }
 
         _cleanup_exe($exefile);
     }
