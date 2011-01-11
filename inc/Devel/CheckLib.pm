@@ -3,8 +3,7 @@
 package    #
   Devel::CheckLib;
 
-#use 5.00405; #postfix foreach
-use 5.010000;
+use 5.00405;    #postfix foreach
 
 use strict;
 use vars qw($VERSION @ISA @EXPORT);
@@ -15,7 +14,12 @@ use Text::ParseWords 'quotewords';
 use File::Spec;
 use File::Temp;
 
-use feature ':5.10';
+# Used in creating dynamic library build targets
+use constant {
+    API_1_40 => '-D__API_1_40',
+    API_1_38 => '-D__API_1_38',
+    API_1_36 => '-D__API_1_36',
+};
 
 require Exporter;
 @ISA    = qw(Exporter);
@@ -144,6 +148,19 @@ This can also be supplied on the command-line.
 
 =back
 
+=head2 check_lib_version_or_exit
+
+This performs the same checks as C<assert_lib>.  In addition, it makes a
+get version call against the libblkid library and returns an "integerized"
+version representation of the libblkid version which is installed.  Based
+upon this, it returns a string to Makefile.PL comprised of the proper
+-D define compiler flags required to build and create a targetted build
+of L<Device::Blkid::E2fsprogs> to match the current version of the API on
+the target system.
+
+If there are any problems with this functionality, please see and edit the
+package Makefile.PL by hand.
+
 =head2 check_lib_or_exit
 
 This behaves exactly the same as C<assert_lib()> except that instead of
@@ -174,41 +191,28 @@ returning false instead of dieing, or true otherwise.
 
 sub check_lib_version_or_exit {
     eval 'assert_lib(@_)';
-
-    my $lib_version;
     
-    if ( $@ ) {
-        say "Trapping exception";
-        $lib_version = $@;
+    if ( $@ =~ /^200/ ) {
+        warn(
+            "You currently have a util-linux-ng based version of libblkid installed.\n",
+            "Please obtain Device::Blkid from CPAN for your library version.\n"
+        );
+        exit;
     }
-    
-    given ($lib_version) {
-        when (/^140/) {
-            say "Matched on version 1.40";
-            # Version 1.40 - 25 calls
-            return ("-D__API_1_40 -D__API_1_38");
-        }
-        default {
-            say "Default catch all";
-            exit;
-        }
+    elsif ( $@ =~ /^140/ ) {
+        return join(' ', API_1_40, API_1_38, API_1_36);
+    } elsif ( $@ =~ /^138/ ) {
+        return join(' '. API_1_38, API_1_36);
+    } elsif ( $@ =~ /^136/ ) {
+        return join(' ', API_1_36);
+    } else { # $@ =~ /^-1/
+        warn(
+            "Your libblkid version is not currently supported.\n",
+            "Update Makefile.PL manually for your library version.\n",
+        );
+        exit;
     }
 }
-#     if ($@) {
-
-#         if ( $@ =~ m/^wrong result:/ ) {
-#             my $msg_1 =
-#               "This package is incompatible with version 2.xx.x of libblkid.\n";
-#             my $msg_2 =
-# "Please obtain Device::Blkid from CPAN for your library version.\n";
-#             warn $msg_1, $msg_2;
-#             exit;
-#         }
-
-#         warn $@;
-#         exit;
-#     }
-
 
 sub check_lib_or_exit {
     eval 'assert_lib(@_)';
@@ -362,8 +366,9 @@ sub assert_lib {
 
         # DEBUG printf
         if ( $args{debug} ) {
-            printf( "The return value from library calls in Makefile.PL is %d\n",
-                    $? >> 8 );
+            printf(
+                "The return value from library calls in Makefile.PL is %d\n",
+                $? >> 8 );
         }
 
         _cleanup_exe($exefile);
@@ -373,13 +378,10 @@ sub assert_lib {
     my $miss_string = join( q{, }, map { qq{'$_'} } @missing );
     die("Can't link/include $miss_string\n") if @missing;
 
-    # my $wrong_string = join( q{, }, map { qq{'$_'} } @wrongresult);
-    # die("wrong result: $wrong_string\n") if @wrongresult;
-
     # Throw the returned version identifier up
     my $blkid_version = shift @blkid_version;
     die($blkid_version) if ( $blkid_version > 0 );
-
+    
     # Default catch-all, unknown version, will attempt a full API build (25 calls)
     die("Unable to determine libblkid library version, bailing");
 }
