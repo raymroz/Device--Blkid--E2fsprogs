@@ -5,6 +5,17 @@ use Devel::CheckLib;
 # library, I am also going to make a call on the lib to get version data which is used to set a DEFINE for the C
 # preprocessor. This will provide for multiple version support.
 
+# Version history of e2fsprogs libblkid
+#
+# Version legend
+#
+# Versions > 2.xx.x ( > 2000 ) is util-linux-ng (use the Device::Blkid library instead)
+# Version 1.40 (140) - 25 API calls
+# Version 1.38 (138) - 24 API calls
+# Version 1.36 (136) - 21 API calls
+# Version 1.34 (134) - 18 API calls - NOT supported at this time, no calls return a library version
+# Version 1.33 (133) - 17 API calls - NOT supported at this time, no calls return a library version
+
 check_lib_version_or_exit (
     function => '
         const char *vers = NULL;
@@ -12,8 +23,14 @@ check_lib_version_or_exit (
         int vernum = 0;
         vernum = blkid_get_library_version(&vers, &date);
         if (vernum >= 2000)
-            return(1); 
-        return (0);
+            return(200); /* Can only return 1 byte */
+        if (vernum >= 140)
+            return(140);
+        if (vernum >= 138)
+            return(138);
+        if (vernum >= 136)
+            return(136); 
+        return (-1);
         ',
     incpath => '/usr/include/blkid',
     lib     => 'blkid',
