@@ -181,13 +181,6 @@ returning false instead of dieing, or true otherwise.
 
 =cut
 
-#sub check_lib_or_exit {
-#    eval 'assert_lib(@_)';
-#    if($@) {
-#        warn $@;
-#        exit;
-#    }
-#}
 
 sub check_lib_version_or_exit {
     eval 'assert_lib(@_)';
@@ -200,12 +193,18 @@ sub check_lib_version_or_exit {
         exit;
     }
     elsif ( $@ =~ /^140/ ) {
+        print("Version 1.40 or better of libblkid detected.\n");
+        print("\tBuilding module for that version\n");
         return join(' ', API_1_40, API_1_38, API_1_36);
     } elsif ( $@ =~ /^138/ ) {
-        return join(' '. API_1_38, API_1_36);
+        print("Version 1.38 or 1.39 of libblkid detected.\n");
+        print("\tBuilding module for those versions\n");
+        return join(' ', API_1_38, API_1_36);
     } elsif ( $@ =~ /^136/ ) {
+        print("Version 1.36 or 1.37 of libblkid detected.\n");
+        print("\tBuilding module for those versions\n");
         return join(' ', API_1_36);
-    } else { # $@ =~ /^-1/
+    } else { # $@ =~ /^-1/ or Bad Things have happened
         warn(
             "Your libblkid version is not currently supported.\n",
             "Update Makefile.PL manually for your library version.\n",
