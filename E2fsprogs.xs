@@ -35,6 +35,7 @@ typedef struct blkid_struct_dev_iterate *DevIter;
  *
  *********************************/
 
+#ifdef __API_1_38
 /* extern void blkid_put_cache(blkid_cache cache) */
 void _blkid_put_cache(Cache cache)
 {
@@ -68,17 +69,6 @@ Cache _blkid_get_cache(const char *filename)
     return cache;
 }
 
-/* extern void blkid_gc_cache(blkid_cache cache) */
-void _blkid_gc_cache(Cache cache)
-{
-    #ifdef __DEBUG
-    printf("\tDEBUG: _blkid_gc_cache()\n");
-    printf("\tDEBUG: arg(1): cache_address(struct):%p\n", cache);
-    assert(cache);
-    #endif
-
-    blkid_gc_cache(cache);
-}
 
 /*********************************
  * dev.c
@@ -675,7 +665,21 @@ HV *_blkid_get_library_version(void)
         return NULL;
     }   
 }
+#endif /* __API_1_38 */
 
+#ifdef __API_1_40
+/* extern void blkid_gc_cache(blkid_cache cache) */
+void _blkid_gc_cache(Cache cache)
+{
+    #ifdef __DEBUG
+    printf("\tDEBUG: _blkid_gc_cache()\n");
+    printf("\tDEBUG: arg(1): cache_address(struct):%p\n", cache);
+    assert(cache);
+    #endif
+
+    blkid_gc_cache(cache);
+}
+#endif /* __API_1_40 */
 
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs        PREFIX = _blkid_
 
