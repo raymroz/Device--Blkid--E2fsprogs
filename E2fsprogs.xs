@@ -5,7 +5,7 @@
  * E2fsprogs.xs
  * December 2010
  *
- * Version: 0.18
+ * Version: 0.20
  */
 
 
@@ -816,11 +816,7 @@ void _blkid_gc_cache(cache)
 #endif
 
 
-    
-##########################################################################################################
-### Object Resource Cleanup
-###
-###
+
 MODULE = Device::Blkid::E2fsprogs    PACKAGE = Device::Blkid::E2fsprogs::Cache            PREFIX = _blkid_
 
 void _blkid_DESTROY(cache)
