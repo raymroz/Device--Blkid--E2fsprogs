@@ -87,6 +87,7 @@ WriteMakefile(
     # Un-comment this if you add C files to link with later:
     # OBJECT            => '$(O_FILES)', # link all the C files too
 
+    LICENSE   => 'perl',
     EXE_FILES => [],
     dist      => { COMPRESS => 'gzip -9f', SUFFIX => 'gz' },
     clean => { FILES => 'Device-Blkid-E2fsprogs-*' },
