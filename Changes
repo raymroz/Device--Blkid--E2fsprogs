@@ -40,4 +40,12 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
         - Re-ordered E2fsprogs.xs file. Functions now ordered in order of their appearance by version
         - Added C preprocessor directives to E2fsprogs.xs to provide for targeted version builds
         - Updated README with details about targetting versions and version history of libblkid
-        = Updated lib/Device/Blkid/E2fsprogs.pm POD with details about libblkid version history and targeting
+        - Updated lib/Device/Blkid/E2fsprogs.pm POD with details about libblkid version history and targeting
+
+0.20  Tue Jan 11 23:23:54 AST 2011
+        - Added libblkid version numbers to functions in POD (version which function appeared in libblkid)
+        - Cleaned up additional areas of POD in E2fsprogs.pm file.
+        - Added two additional cache tests to unit test script
+        - Additional cleaning to README
+
+        
