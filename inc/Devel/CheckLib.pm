@@ -1,9 +1,9 @@
 # $Id: CheckLib.pm,v 1.25 2008/10/27 12:16:23 drhyde Exp $
 
-package    #
-  Devel::CheckLib;
+package Devel::CheckLib;
 
-use 5.00405;    #postfix foreach
+# use 5.00405;    #postfix foreach
+use 5.008000;
 
 use strict;
 use vars qw($VERSION @ISA @EXPORT);
@@ -14,16 +14,40 @@ use Text::ParseWords 'quotewords';
 use File::Spec;
 use File::Temp;
 
+require Exporter;
+@ISA = qw(Exporter);
+
+#@EXPORT =
+#  qw(assert_lib check_lib_or_exit check_lib check_blkid_version_or_exit);
+
+our %EXPORT_TAGS = (
+    'cflag_defs' => [
+        qw(
+          API_DEF_133
+          API_DEF_136
+          API_DEF_138
+          API_DEF_140
+          )
+    ],
+    'funcs' => [
+        qw/
+          assert_lib
+          check_lib_or_exit
+          check_lib
+          check_blkid_version_or_exit
+          /
+    ],
+);
+Exporter::export_ok_tags('cflag_defs');
+Exporter::export_ok_tags('funcs');
+
 # Used in creating dynamic library build targets
 use constant {
-    API_1_40 => '-D__API_1_40',
-    API_1_38 => '-D__API_1_38',
-    API_1_36 => '-D__API_1_36',
+    API_DEF_133 => qq/-D__API_1_33/,
+    API_DEF_136 => qq/-D__API_1_33 -D__API_1_36/,
+    API_DEF_138 => qq/-D__API_1_33 -D__API_1_36 -D__API_1_38/,
+    API_DEF_140 => qq/-D__API_1_33 -D__API_1_36 -D__API_1_38 -D__API_1_40/,
 };
-
-require Exporter;
-@ISA    = qw(Exporter);
-@EXPORT = qw(assert_lib check_lib_or_exit check_lib check_lib_version_or_exit);
 
 # localising prevents the warningness leaking out of this module
 local $^W = 1;    # use warnings is a 5.6-ism
@@ -181,35 +205,35 @@ returning false instead of dieing, or true otherwise.
 
 =cut
 
-
-sub check_lib_version_or_exit {
+sub check_blkid_version_or_exit {
     eval 'assert_lib(@_)';
-    
+
     if ( $@ =~ /^200/ ) {
         warn(
-            "You currently have a util-linux-ng based version of libblkid installed.\n",
-            "Please obtain Device::Blkid from CPAN for your library version.\n"
+            "\tYou currently have a util-linux-ng based version of libblkid installed.\n",
+            "\tPlease obtain Device::Blkid from CPAN for your library version.\n\n"
         );
         exit;
     }
     elsif ( $@ =~ /^140/ ) {
-        print("Version 1.40 or better of libblkid detected.\n");
-        print("\tBuilding module for that version\n");
-        return join(' ', API_1_40, API_1_38, API_1_36);
-    } elsif ( $@ =~ /^138/ ) {
-        print("Version 1.38 or 1.39 of libblkid detected.\n");
-        print("\tBuilding module for those versions\n");
-        return join(' ', API_1_38, API_1_36);
-    } elsif ( $@ =~ /^136/ ) {
-        print("Version 1.36 or 1.37 of libblkid detected.\n");
-        print("\tBuilding module for those versions\n");
-        return join(' ', API_1_36);
-    } else { # $@ =~ /^-1/ or Bad Things have happened
-        warn(
-            "Your libblkid version is not currently supported.\n",
-            "Update Makefile.PL manually for your library version.\n",
-        );
-        exit;
+        print("\tVersion 1.40 or better of libblkid detected.\n");
+        print("\tBuilding module for that version\n\n");
+        return API_DEF_140;
+    }
+    elsif ( $@ =~ /^138/ ) {
+        print("\tVersion 1.38 or 1.39 of libblkid detected.\n");
+        print("\tBuilding module for those versions\n\n");
+        return API_DEF_138;
+    }
+    elsif ( $@ =~ /^136/ ) {
+        print("\tVersion 1.36 or 1.37 of libblkid detected.\n");
+        print("\tBuilding module for those versions\n\n");
+        return API_DEF_136;
+    }
+    else {    # Default catch, something is not right
+        print("\tLibblkid seems present, but unable to detect its version.\n");
+        print("\tBuilding a base v1.33 compliant module by default\n\n");
+        return API_DEF_133;
     }
 }
 
@@ -358,31 +382,49 @@ sub assert_lib {
 
         push @missing, $lib if $rv != 0 || !-x $exefile;
 
-        push @blkid_version, ( $? >> 8 )
-          if ( $rv == 0
-            && -x $exefile
-            && system( File::Spec->rel2abs($exefile) ) != 0 );
+        ######################################################
+        # If the 'blkid' argument flag is set, bypass original
+        # function behavior here and do custom version checks
+        # otherwise revert to default
+        if ( $args{blkid} ) {
+            push @blkid_version, ( $? >> 8 )    # shift 8 for child's return
+              if ( $rv == 0
+                && -x $exefile
+                && system( File::Spec->rel2abs($exefile) ) != 0 );
+        }
+        else {
+            push @wrongresult, $lib
+              if $rv == 0
+                  && -x $exefile
+                  && system( File::Spec->rel2abs($exefile) ) != 0;
+        }
 
-        # DEBUG printf
-        if ( $args{debug} ) {
-            printf(
-                "The return value from library calls in Makefile.PL is %d\n",
-                $? >> 8 );
+        if ( $args{debug} && $args{blkid} ) {
+            printf( "Libblkid version call return value is %d\n", $? >> 8 );
         }
 
         _cleanup_exe($exefile);
     }
     unlink $cfile;
 
+    # Basic lib sanity checks, is header and library present?
     my $miss_string = join( q{, }, map { qq{'$_'} } @missing );
     die("Can't link/include $miss_string\n") if @missing;
 
-    # Throw the returned version identifier up
-    my $blkid_version = shift @blkid_version;
-    die($blkid_version) if ( $blkid_version > 0 );
-    
-    # Default catch-all, unknown version, will attempt a full API build (25 calls)
-    die("Unable to determine libblkid library version, bailing");
+    ######################################################
+    # If the 'blkid' argument flag is set, bypass original
+    # function behavior here and do custom version checks
+    # otherwise revert to default
+    if ( $args{blkid} ) {
+
+        # Throw the returned version identifier up
+        my $blkid_version = shift @blkid_version;
+        die($blkid_version) if ( $blkid_version != 0 );
+    }
+    else {
+        my $wrong_string = join( q{, }, map { qq{'$_'} } @wrongresult );
+        die("wrong result: $wrong_string\n") if @wrongresult;
+    }
 }
 
 sub _cleanup_exe {

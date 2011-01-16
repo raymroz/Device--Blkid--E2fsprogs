@@ -5,7 +5,7 @@
  * E2fsprogs.xs
  * December 2010
  *
- * Version: 0.20
+ * Version: 0.22
  */
 
 
@@ -30,7 +30,15 @@ typedef struct blkid_struct_dev *Device;
 typedef struct blkid_struct_tag_iterate *TagIter;
 typedef struct blkid_struct_dev_iterate *DevIter;
 
+/*
+ *
+ * VERSION 1.33
+ *
+ * - 17 API calls (original release)
+ *
+ */
 
+#ifdef __API_1_33
 /* extern void blkid_put_cache(blkid_cache cache) */
 void _blkid_put_cache(Cache cache)
 {
@@ -437,11 +445,8 @@ HV *_blkid_parse_tag_string(const char *token)
 }
 
 /*
- *
- * VERSION 1.34
- *
- * - 20 API calls
- *
+ * VERSION 1.34 begins here, adds 1 new call from v1.33
+ * coupled with v1.33 to provide baseline default build target
  */
 
 /* int blkid_known_fstype(const char *fstype) */
@@ -471,7 +476,7 @@ const char *_blkid_known_fstype(const char *fstype)
 
     return fstype;
 }
-/* end VERSION 1.34 */
+#endif /* VERSION 1.33 baseline */
 
 /*
  *
@@ -682,7 +687,10 @@ PROTOTYPES: DISABLE
 
  # XSUB glue prototypes
 
-
+ # VERSION 1.33 baseline
+    
+#ifdef __API_1_33
+    
 void _blkid_put_cache(cache)
                        Cache          cache
 
@@ -761,6 +769,8 @@ Device _blkid_find_dev_with_tag(cache, type, value)
 
 HV *_blkid_parse_tag_string(token)
                        const char *   token
+
+#endif
 
 
  # VERSION 1.36 or 1.37
