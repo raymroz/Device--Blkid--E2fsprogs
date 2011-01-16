@@ -27,10 +27,20 @@ use Devel::CheckLib qw/ :funcs :cflag_defs /
 # Note: The blkid_get_library_version() call modifies both its parameters (C strings) and
 # returns an 'integerized' version based upon the real, string-based version. We use this
 # below to determine and return a version type. All versions above 1.40.1 return a 4 digit
-# integer and since the return type is only a single WORD in width, we need to drop the
+# integer and since the return type is only a single byte in width, we need to drop the
 # last digit from versions > 2.00.0. Also note, the get version API calls first appeared
-# in version 1.36 of libblkid so versions older than this are not currently supported. See
-# DEFINE argument of WriteMakefile below.
+# in version 1.36 of libblkid so dynamic version detection is not supported in versions
+# prior to this, although manual configuration can be either selected via the interactive
+# configuration phase of this script or by manually specifiying C preprocessor DEFINEs on
+# the command line when executing this script.
+
+# DEBUGGING and DEBUG builds
+# To build a DEBUG build of this module, please refer below to the DEFINE argument to the
+# WriteMakefile() function. In that function you will locate two DEFINE arguments, one of
+# which is the default argument used in the normal construction of this package, the other
+# which is commented out and which has an additional DEBUG related define added to it.
+# Refer to the details in that section of the file to produce a DEBUG build if this is
+# required.
 
 # Constants imported from Devel::Checklib as 'cflag_defs' representing CFLAG defines which
 # are passed as C compiler args when building the module.
@@ -39,6 +49,7 @@ use Devel::CheckLib qw/ :funcs :cflag_defs /
 # API_DEF_138 => qq/-D__API_1_33 -D__API_1_36 -D__API_1_38/,
 # API_DEF_140 => qq/-D__API_1_33 -D__API_1_36 -D__API_1_38 -D__API_1_40/,
 
+# BEGIN the user interaction portion of this script
 my $output = qq(
         Running Makefile.PL to perform package configuration.
         Would you like to try dynamic libblkid version detection and configuration?
@@ -47,7 +58,7 @@ my $output = qq(
 print $output;
 my $line;
 chomp( $line = <STDIN> );
-$line = lc($line);
+$line = lc($line);    # Force lowercase
 
 my $api_define;
 
@@ -99,6 +110,7 @@ elsif ( $line eq 'n' ) {
     chomp( $line = <STDIN> );
     $line = lc($line);
 
+    # Setup our DEFINE argument below which will be passed to gcc later
     $api_define = API_DEF_133 if ( $line eq 'y' );
     $api_define = API_DEF_136 if ( $line == 1 );
     $api_define = API_DEF_138 if ( $line == 2 );
@@ -135,6 +147,12 @@ WriteMakefile(
         'Test::More'    => '0',
         'Test::Builder' => '0',
     },
+    META_MERGE => {
+        resources => {
+            repository =>
+              'git://github.com/raymroz/Device--Blkid--E2fsprogs.git',
+        },
+    },
     (
         $] >= 5.005
         ? (
@@ -146,17 +164,16 @@ WriteMakefile(
     LIBS          => ['-lblkid'],
     NEEDS_LINKING => 1,
 
-    # To create a debug build, please add '-D__DEBUG' to the DEFINE
-    # line below, as here:      DEFINE  =>  '-D__DEBUG', or uncomment
-    # the line below.
-    # DEFINE => qq/$api_define -D__DEBUG/,
-    # Make sure to leave the '$api_define' and keep the string double
-    # quoted to support dynamic library version detection and build targets
-    # Note: To disable version-based build targets, remove '$api_define'
-    # below and replace with any custom DEFINE directives which you require
-    DEFINE    => "$api_define",
-    INC       => '-I.',
-    LICENSE   => 'perl',
+# To create a DEBUG build of this module, uncomment the first DEFINE which follows
+# this text and comment out the DEFINE argument immediately following it.
+# Be sure to leave the string double quoted so that it remains an interpolated
+# string. After this has been done, re-run the Makefile.PL as in a normal configuration
+# to generate a Makefile which will produce a DEBUG build of this package.
+#
+# DEFINE => "$api_define -D__DEBUG",
+    DEFINE  => "$api_define",
+    INC     => '-I.',
+    LICENSE => 'perl',
     EXE_FILES => [],
     dist      => { COMPRESS => 'gzip -9f', SUFFIX => 'gz' },
     clean => { FILES => 'Device-Blkid-E2fsprogs-*' },
