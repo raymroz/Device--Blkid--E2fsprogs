@@ -1,4 +1,4 @@
-Device::Blkid::E2fsprogs version 0.20
+Device::Blkid::E2fsprogs version 0.22
 =====================================
 
 NOTE: This library only exposes the older e2fsprogs versions of libblkid ( numbered 1.xx.x)
@@ -80,23 +80,93 @@ the library, those were:
 
 INSTALLATION
 
-For a standard installation of this module type the following:
+This module uses an optional dynamic libblkid version detection mechanism to try and ascertain
+which version of libblkid is installed on the target system. It is optional and you are free to
+select the libblkid version manually as well.  After running the standard, 'perl Makefile.PL',
+please follow the in screen prompts for installation details. Please see the following sample
+installation scenarios for further details.
 
-   perl Makefile.PL
+This first scenario demonstrates a sample configuration and installation using the dynamic libblkid
+library version detection.  Begin by running the Makefile.PL program, answering in the affirmative,
+'Y/y' when asked to try the dynamic version detection, as follows:
+
+  $ perl Makefile.PL
+
+          Running Makefile.PL to perform package configuration.
+          Would you like to try dynamic libblkid version detection and configuration?
+
+          Y/y or N/n: y
+
+          Version 1.40 or better of libblkid detected.
+          Building module for that version
+
+  Checking if your kit is complete...
+  Looks good
+  Writing Makefile for Device::Blkid::E2fsprogs
+
+Here the dynamic version detection has successfully determined that version 1.40 or newer of
+libblkid is installed on the target system and has written a Makefile which will generate a
+matching module installation. Now that you have a Makefile which properly matches your version
+of libblkid, the remainder of the build/install process is standard:
+   
    make
    make test
    make install
 
--- Libblkid version detection --
+This second scenario involves manual selection of a libblkid library version target and is
+initiated by replying in the negative to the first question about dynamic version detection:
 
-  This package has made use of a customized Devel::CheckLib module and Makefile.PL in an attempt
-  to detect the version of libblkid currently installed on the target system and to then generate
-  a PerlXS interface which directly targets and matches the API interface of that libblkid version.
-  This process is expected to work on all versions of libblkid later than v1.35. Should you have
-  any problems with this process, evident either in running the Makefile.PL or in running make on
-  its resulting Makefile, please see the Makefile.PL as well as the E2fsprogs.xs file to troubleshoot.
-  If you wish to report any problems with this version detection, please include any output from the
-  installation process as well as a copy of your /usr/include/blkid/blkid.h file.
+  $ perl Makefile.PL
+
+          Running Makefile.PL to perform package configuration.
+          Would you like to try dynamic libblkid version detection and configuration?
+
+          Y/y or N/n: n                        
+  
+          The default is to build a v1.33 compliant interface as it will work with all e2fsprogs-based
+          versions of libblkid. Keep in mind that attempting to build a version target which is more
+          recent than the version which you have installed will fail with linker errors. If you are not
+          entirely certain which version which you have installed, accepting the default here (a 'Y/y'
+          selection) is safest, however you may wish to try the dynamic version detection which should
+          accurately determine versions 1.36 and newer.
+
+          If the default v1.33 build target is acceptable to you, please answer 'Y/y', otherwise select
+          one of the following version bundles from the list, or 'Q/q' to quit:
+
+          1. v1.36 (compliant with libblkid versions 1.36-1.37)
+          2. v1.38 (compliant with libblkid versions 1.38-1.39)
+          3. v1.40 (compliant with all libblkid versions better than 1.40)
+
+          Enter selection (Y/y for default or option 1, 2, 3): 2
+
+  Checking if your kit is complete...
+  Looks good
+  Writing Makefile for Device::Blkid::E2fsprogs
+
+In this case the user has manually selected option 2, v1.38 of libblkid. This build target is
+compliant with versions 1.38 and 1.39 of the library and a corresponding Makefile has been
+generated which can now be run to build and install the target module. Again, this is done using
+the standard make, make test, make install method:
+
+  make
+  make test
+  make install
+
+Finally, a third option is to edit the Makefile.PL directly for any custom requirements. Please see
+that file for further details as it has been well documented.
+
+
+===== libblkid version detection =====
+
+I have made use of a customized Devel::CheckLib module and Makefile.PL in an attempt to detect
+the version of libblkid currently installed on the target system and to then generate a PerlXS
+interface which directly targets and matches the API interface of that libblkid version.
+
+This process is expected to work on all versions of libblkid later than v1.35. Should you have
+any problems with this process, evident either in running the Makefile.PL or in running make on
+its resulting Makefile, please see the Makefile.PL as well as the E2fsprogs.xs file to troubleshoot.
+If you wish to report any problems with this version detection, please include any output from the
+installation process as well as a copy of your /usr/include/blkid/blkid.h file.
    
 DEPENDENCIES
 
