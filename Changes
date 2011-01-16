@@ -47,5 +47,13 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
         - Cleaned up additional areas of POD in E2fsprogs.pm file.
         - Added two additional cache tests to unit test script
         - Additional cleaning to README
+        - Package version bumped to 0.20
 
-        
+0.22  Sat Jan 15 20:25:21 AST 2011
+        - Updated Makefile.PL to provide for optional library version detection via user interaction
+        - Updated Devel::CheckLib to support new optional library version detection via user interaction
+        - Minor updates to POD in E2fsprogs.pm
+        - README has been updated with new interactive installation instructions
+        - E2fsprogs.xs has had the additional C preprocessor defines added to support versions 1.33-1.35
+        - Commented out all but two tests in .t script; these require new approach with dynamic versioning
+        - Package version bumped to 0.22
