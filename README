@@ -1,19 +1,20 @@
-Device::Blkid::E2fsprogs version 0.22
+Device::Blkid::E2fsprogs version 0.24
 =====================================
 
-NOTE: This library only exposes the older e2fsprogs versions of libblkid ( numbered 1.xx.x)
-and not the newer and preferred util-linux-ng versions ( v2.15 or better ). In almost
+NOTE: This module only wraps the older e2fsprogs versions of libblkid (numbered 1.xx.x)
+and not the newer versions now bundled as a part of util-linux-ng (v2.15 or better). In almost
 every case you would be advised to use Bastian Friedrich's util-linux-ng based Device::Blkid
 module as the newer lib interface is (mostly) backward compatible with the old one. This
 module would prove useful in any situation where for any reason you are limited on your
-systems to a 1.xx.x libblkid version which is a part of the e2fsprogs package. Incidentally,
-libblkid version numbering is based upon the version of either util-linux-ng or e2fsprogs of
-which it was a part and as such, e2fsprogs based versions of the library were all numbered
-v1.xx.x whereas util-linux-ng versions are numbered as v2.15 or better which was the version
-of util-linux-ng in which it was added to that package. So just to be clear, when in doubt
-you are advised to grab Bastian's newer util-linux-ng based libblkid interface module unless
-you have some specific reason as to why you can't, perhaps something similar to what led me
-to write this version.
+systems to a 1.xx libblkid version which is a part of the e2fsprogs package. With respect to
+version numbers, it is the convention that libblkid adopts a version number which matches the
+package of which it is a part of, so when the library was migrated to the util-linux-ng package
+it jumped in version number from 1.41.4 to 2.15. So the rule of thumb here is that if the
+version of libblkid on your system begins with a '1', it is an e2fsprogs-based version of the
+library, whereas those which begin with a '2' are the newer util-linux-ng based builds.
+In most cases you are advised to use the newer Device::Blkid written by Bastian Friedrich
+unless your are bound by some specific constraint to the e2fsprogs-based versions as I was,
+which is what led me to create this package.
 
 This version has been implemented somewhat differently than Bastian's util-linux-ng build
 of the library. He opted to keep much of his logic and processing in XSUB, mine is done
@@ -51,19 +52,24 @@ problems while using this software package, as well as for instructions on build
 version.
 
 It is worth noting that between versions 1.33 and 1.41.4, the entire period which libblkid
-was shipping as a part of the e2fsprogs package, the number of calls present in the API
-expanded from the 17 in the original release of the library back in 2003 to 24 when it was
+was bundled as a part of the e2fsprogs package, the number of calls present in the API was
+expanded from the 17 in the original release of the library back in 2003 to 25 when it was
 migrated over to the util-linux-ng package in early 2009. This module supports all 24 calls
-from the most recent iteration of this run. I will, in an upcoming version of this module,
-provide a means for configuring this package for a target release of libblkid by way of the
-in package Makefile.PL, but for now it supports the entire breadth of calls.
+from the most recent iteration of this run. When users run the initial Makefile.PL script in
+order to configure this package, it attempts to dynamically detect which version of the
+libblkid library is currently installed on the target system and will generate a Makefile
+which matches that target version. This version detection should work for any version of the
+library after 1.35.  For versions 1.33 through to 1.35 there is the option to manually select
+a build target for this package which should suit most needs. Finally, users may hand edit
+the Makefile.PL script as needed to suit their specific needs.
 
 E2FSPROGS-LIBBLKID VERSION HISTORY
 
 Libblkid first appeared in version 1.33 of the e2fsprogs package back in 2003. The initial
-iteration of the library exposed 17 function calls as part of its API. When libblkid stopped
-shipping with the e2fsprogs package, the API call count was at 25 functions which had been a
-part of the API since version 1.40 of e2fsprogs. The API history is as follows:
+release of the library exposed 17 function calls as part of its API. When libblkid stopped
+shipping with the e2fsprogs package, the function count numbered at 25 calls which had been
+the case since version 1.40 of the interface. A brief outline of the API history is as
+follows:
 
    v1.33  -  17 calls
    v1.34  -  18 calls
@@ -77,7 +83,6 @@ the library, those were:
    int blkid_parse_version_string(const char *ver_string);
    int blkid_get_library_version(const char **ver_string, const char **date_string);
    
-
 INSTALLATION
 
 This module uses an optional dynamic libblkid version detection mechanism to try and ascertain
@@ -176,48 +181,37 @@ This module also requires these other modules and libraries:
 
 E2fsprogs v1.33-v1.41
 
-* Note: In order to install this package on systems running a version of libblkid older than
-        version 1.36, you will be required to manually edit the Makefile.PL, adding the proper
-        define CFLAG(s) for gcc as well as determine which function calls are present in the API
-        exposed by the version of your particular libblkid and either comment out or remove
-        them from the E2fsprogs.xs file.  Keep in mind that the libblkid funtions appear in
-        two seperate sections of that file; in the top half, which is the C language section
-        and at the bottom, the Perl XSUB section.
+* Note: This package supports both dynamic version detection during the configuration phase
+        of running Makefile.PL, as well as manual selection of a build target by version.
+        If neither of these are suitable to your needs or there is some sort of problem with
+        this on your target system, please refer to the Makefile.PL as well as Devel::CheckLib
+        files; both are well documented and relatively easy to modify.
 
 DEBUGGING and REPORTING A BUG
 
 If you have any problems with the functioning of this library, please contact me at my CPAN
-address at mroz@cpan.org. Please be sure and include a list of packages installed on your system
-or at least the exact version of e2fsprogs which you have installed. Also, please build and
-install a debug build of this library as detailed below, execute the application which is using
-this package and failing, and send me the verbose debugging output from the DEBUG build of this
-package.
+address at mroz@cpan.org. Please be sure and include a list of relevant packages installed on
+your system or at least the exact version of e2fsprogs which you have installed, perhaps by
+providing the blkid.h file.
 
-There are two ways to produce a debug build of this module package. The first, and easiest, is
-to pass a debug DEFINE to the Makefile.PL file when configuring the package for installation.
-To install a DEBUG build in this way, type the following from the top level of this package:
+Also, please build and install a DEBUG build of this module. The quickest way to generate a
+DEBUG build of this package is by making a quick edit to the Makefile.PL file and uncommenting
+the prefab DEFINE argument to the WriteMakefile() function call. Please refer to the details
+on doing this found in the Makefile.PL file. After you have so configured your Makefile.PL,
+run the initial configuration program as you would for a normal installation.
 
-   perl Makefile.PL DEFINE=-D__DEBUG
-   make
-   make test
-   make install
+The DEBUG builds of this module generate a much higher degree of verbosity in output to STDOUT.
+Please copy any output to STDOUT when you experience problems and be sure and include it in
+any submission you send to me detailing your problem.
 
-The second method is to edit the Makefile.PL file itself and to add the '-D__DEBUG' define to
-the DEFINE argument of the WriteMakefile method found in the file (see the comments inside the
-file for additional details. Should you run a DEBUG build of this package you will note a much
-higher level of verbosity in the output from the execution of the library. Please capture and
-submit any and all of this additional verbosity to me at my CPAN address making sure to include
-a complete description of the abhorrent behavior you have or are observing while using this
-package.
-
-Furthermore, If you find any problems with this package and wish to submit a patch, please
+Furthermore, should you find any problems with this package and wish to submit a patch, please
 send the unified diff to my CPAN address including full patch instructions as well as a
 description of what issue or bug you have found and addressed. Please patch as per recommended
 best practices found in the patch(1) man page, under "NOTES FOR PATCH SENDERS".
   
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2010 by Raymond Mroz
+Copyright (C) 2010, 2011 by Raymond Mroz
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.1 or,
@@ -228,8 +222,14 @@ THANKS
 Thanks to Bastian for all of is work on Device::Blkid, I was especially appreciative of your
 POD as libblkid itself is not terribly well documented. While I did make a large number of my
 own straight test calls in C against the library your documentation kept me in the right
-direction and saved me a load of time by allowing me to concentrate my efforst in the right
-place. Thanks.
+direction and saved me a load of time. Thanks!
+
+Thanks to David Cantrell, David Golden and Yasuhiro Matsumoto for Devel::CheckLib. I hacked it
+up a little bit to manage my dynamic version checks and build, hope you don't mind.
+
+I would also like to thank Larry McInnis for the loan of some hardware on which to develop this
+module. Most everything I have had been tied up and developing on the latest and greatest version
+of Debian didn't make much sense.
 
 BUGS
 
@@ -237,3 +237,8 @@ No known bugs at this time. That said, this module is largely written in C and d
 a number of memory allocations. While these allocations are done inside of the libblkid itself,
 I do make every attempt to free the memory explicitly when I am done with it. That said, leaks
 are possible. Report any issues as is detailed above.
+
+FUTURE
+
+Please note that this module should be considered early release. As such, this information or its
+API may change at any time. Please check CPAN for the latest version of this software.
