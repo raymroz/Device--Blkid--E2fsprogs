@@ -1,6 +1,6 @@
 package Device::Blkid::E2fsprogs;
 
-our $VERSION = '0.22';
+our $VERSION = '0.24';
 
 use 5.008000;
 use strict;
@@ -83,7 +83,7 @@ Device::Blkid::E2fsprogs - Perl interface to e2fsprogs-based libblkid (v1.33 - v
 
   # Get the device associated with a given blkid LABEL
   my $type = 'LABEL';
-  my $label = 'SWAP';
+  my $label = '/boot';
 
   # Using the cache
   my $devname = get_devname($type, $value, $cache);
@@ -95,7 +95,7 @@ Device::Blkid::E2fsprogs - Perl interface to e2fsprogs-based libblkid (v1.33 - v
   local $@;
   my $dev_iter = eval { dev_iterate_begin($cache) };
   if ($@) {
-      # Handle exception
+      # Handle exception or not
   }
 
   # And now iterate over list of devices
@@ -108,58 +108,60 @@ Device::Blkid::E2fsprogs - Perl interface to e2fsprogs-based libblkid (v1.33 - v
 
 =head3 Important Note
 
-This library only exposes the older e2fsprogs versions of libblkid ( numbered 1.xx.x)
-and not the newer and preferred util-linux-ng versions ( v2.15 or better ). In almost
-every case you would be advised to use Bastian Friedrich's util-linux-ng based Device::Blkid
-module as the newer lib interface is (mostly) backward compatible with the old one. This
-module would prove useful in any situation where for any reason you are limited on your
-systems to a 1.xx.x libblkid version which is a part of the e2fsprogs package. Incidentally,
-libblkid version numbering is based upon the version of either util-linux-ng or e2fsprogs of
-which it was a part and as such, e2fsprogs based versions of the library were all numbered
-v1.xx.x whereas util-linux-ng versions are numbered as v2.15 or better which was the version
-of util-linux-ng in which it was added to that package. So just to be clear, when in doubt
-you are advised to grab Bastian's newer util-linux-ng based libblkid interface module unless
-you have some specific reason as to why you can't, perhaps something similar to what led me
-to write this version.
+This library is only compatible with those versions of libblkid which shipped as a part of the
+e2fsprogs package, i.e., those versions of the library numbered 1.xx. While this package
+should work with the newer 2.xx.x versions of libblkid which are bundled with the util-linux-ng
+package, this is not recommended and will actually fail given the default library version
+checking which is done in the Makefile.PL configuration script. In most cases users would
+be advised to use Bastian Friedrich's util-linux-ng based L<Device::Blkid> module as the newer
+lib interface is reportedly backward compatible with the old one anyway. Use of this package
+should be limited to those cases where the user is bound by constraint to the older, e2fsprogs
+versions of the library.
 
-While the newer util-linux-ng version of libblkid is reportedly backward compatible with
-the old e2fsprogs version, I have personally witnessed in my testing one instance where an
-older version 1.xx call did not return a block label as it should have. In this case, the
-call in question has a more modern version 2.xx.x counterpart and I am not sure if this is
-a case of unannounced deprecation to removal I have stumbled upon or some other factor. As
-such, if you are moving older e2fsprogs compliant libblkid client code to a system running
-version 2.xx.x of the library, you would be well advised to thoroughly test it for
-compatibility with the new interface.
+As all of the e2fsprogs versioned calls are present, if deprecated, in version 2.xx.x of the
+libblkid library, all older client code should be fully compatible with the new interface.
+There may, in practice, be problems with this assumption. I have personally observed in one
+instance where an older, deprecated call was not returning as was advertised and as it had
+done reliably under the older, version 1.xx builds of the library. Without further experience
+with the util-linux-ng versions of this library, I am unable to present any explanation for
+this. As a result, if you are moving older, e2fsprogs compliant libblkid client code over
+to a system with version 2.xx.x of the library, you would be well advised to thoroughly test
+it for compatibility with the new interface.
 
-This version has been implemented somewhat differently than Bastian's util-linux-ng build
-of the library. He opted to keep much of his logic and processing in XSUB, mine is done
-mostly in C; I have only used XSUB for my straight glue, everything else I kept in C. This is
-not to be taken as any opinion of statement on PerlXS/XSUB, its merely a reflection of my own
-background and tastes.
+Finally, this version has been implemented somewhat differently than Bastian's util-linux-ng
+build of the library. He opted to keep much of his logic and processing in XSUB, mine is done
+mostly in C; I have only used XSUB for my straight glue, everything else I have kept in C and
+have used the Perl API. This should not to be taken as any sort of statement about XS/XSUB but
+instead is simply a reflection of my own personal background and tastes.
 
 =head1 DESCRIPTION
 
-This package provides a Perl interface to the e2fsprogs-based versions of libblkid (those
-versions which begin with a 1). It does not support the larger and more robust API which has
-been added and integrated into the libblkid library since its inclusion in the util-linux-ng
+Libblkid provides a means of identifying block devices as to their content (such as filesystems)
+as well as allowing for the extraction of additional meta information such as filesystem labels,
+volume labels, serial numbers, device numbers, unique identifiers, etc. The libblkid library
+maintains a mapping of all of this composite information and maintains its association with
+a given block device on the system. UUID and label-based fstab(5) file configurations have
+become common in modern Linux distributions. Having the capability to abstract block devices
+in this way and to maintain mappings between volumes and storage devices can make managing
+multiple storage devices a much less daunting task, where every change used to mean a
+broken fstab file entry; this is no longer the case as volumes and partitions may now be
+addressed via their blkid mapping.
+
+The library provides for both low level probing of block devices for this information as well
+as access to an on disk cache file which is reconstructed at boot and at any time which this
+meta information is requested by the kernel. The presence of a cache file provides a way for
+unpriviledged users who do not have read access to a given volume or device a means of
+reliably accessing these mappings. Priviledged users may bypass the cache file altogether and
+force a low level probe of the target device.
+
+This Perl extension to e2fsprogs-based versions of the libblkid library provides for the same
+access available from the C interface. It does not support the larger and more robust API which
+has been added and integrated into the libblkid library since its inclusion in the util-linux-ng
 package. That said, the libblkid which now ships with util-linux-ng is reportedly backward
 compatible with client code dependant upon the older, original library which would mean that
 this module should work with it, albeit with the more limited selection of API calls. Please
-see the preceding note for additional details.
-
-Libblkid provides a means of identifying block devices as to their content (such as filesystems)
-as well as allowing for the extraction of additional information such as filesystem labels,
-volume labels, serial numbers, device numbers, unique identifiers, etc. The libblkid library
-maintains a mapping of all of this composite information and maintains its association with
-a given block device on the system. Libblkid is becoming more common in the configuration files
-of modern linux distributions in places where former practice was to hard code in full device
-names, such as fstab(5) and in lvm aware installers.
-
-In addition to providing for low level probing of block devices for this information, the
-library maintains an on disk cache file of this data. Use of the cache file is the preferred
-way of accessing library mappings and data and it allows unpriviledged users read access to
-this information as well. The blkid cache file is updated at boot and whenever any of the
-low level probe functions in the library are called.
+see the preceding note for additional details regarding the differences between these two
+distinct versions of the library.
 
 I have endeavored to provide a more Perlish interface to the library rather than just do
 straight mappings or wrappers over the C functions. Most library calls will return an undef
@@ -174,19 +176,20 @@ version and how to report any problems which you might have.
 
 It is worth noting that between versions 1.33 and 1.41.4, the entire period which libblkid
 was shipping as a part of the e2fsprogs package, the number of calls present in the API
-expanded from 17 in the original release of the library back in 2003 to 25 when it was
-migrated over to the util-linux-ng package in early 2009. This module supports dynamic
+expanded from 17 in the original release of the library back in 2003 to 25 by the time it
+was migrated over to the util-linux-ng package in early 2009. This extension supports dynamic
 detection of the libblkid version on the target system from version 1.36 onward. This module
-may be installed on systems running versions 1.33 to 1.35 of libblkid but this will require
-some manual configuration of the package Makefile.PL. Please see the comments in that file
-for additional details and instructions on doing this.
+may be installed on systems running versions 1.33 to 1.35 of libblkid as well but this will
+require that the target version is manually selected during initial package configuration
+with the Makefile.PL script.  Please refer to the following installation notes as well as
+to the more thoroughly documented README file at the top most level of this distribution.
 
 =head2 INSTALLATION NOTES
 
 This package has made use of a customized L<Devel::CheckLib> module and Makefile.PL in an
-attempt to detect the version of libblkid currently installed on the target system and to
-then generate a PerlXS interface which directly targets and matches the API interface of
-that libblkid version. This process is expected to work on all versions of libblkid later
+attempt to dynamically detect the version of libblkid currently installed on the target
+system and to then generate a PerlXS interface which directly targets and matches the interface
+of that libblkid version. This process is expected to work on all versions of libblkid later
 than v1.35. Should you have any problems with this process, evident either in running the
 Makefile.PL or in running make against the resulting Makefile, please see the Makefile.PL
 for hints on troubleshooting. If you wish to report any problems with this version detection,
@@ -197,7 +200,8 @@ Please note, dynamic version detection is optional and you are free to select a 
 target during the interactive configuration process.  Furthermore, the package Makefile.PL may
 be directly edited to suit your specific needs. Please see that file for further details; I
 have endeavored to keep it well commented, as well as all related changes and customizations
-made to the L<Devel::CheckLib> package.
+made to the L<Devel::CheckLib> package. Please also refer to the package README file as it
+contains a more exhaustive treatment of this subject.
 
 =head2 DEPENDENCIES
 
@@ -208,7 +212,7 @@ detection will only work on versions 1.36 and newer. It is possible to manually 
 versions 1.33-1.35 by choosing the manual version selection option during the interactive
 configuration phase of the Makefile.PL program. Users are also free to hand edit the Makefile.PL
 script as well as the L<Devel::CheckLib> module to suit their particular needs; I have endeavored
-to keep both files well commented and readable to this end.
+to keep both files well documented to this end.
 
 =head2 EXPORT
 
@@ -245,6 +249,15 @@ Get a valid device structure, either from the cache or by probing the block devi
 =back
 
 =head2 FUNCTIONS
+
+All function calls detailed below also contain the version of libblkid in which they first appeared
+as a part of the library. As has been noted above, all of these calls should also be valid in the
+newer util-linux-ng versions of this interface. Please note, when manually selecting a target version
+during initial package configuration and installation, make sure that you do not 'overshoot' the
+version which is actually installed otherwise installation of this package will fail. When in
+doubt, select dynamic version detection or accept the default baseline version, v1.33, which
+is a safe selection for any version of the library, keeping in mind of course that there may be
+"gaps" in the interface.
 
 =over 4
 
