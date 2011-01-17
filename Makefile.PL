@@ -7,6 +7,9 @@ use lib qw(inc);
 use Devel::CheckLib qw/ :funcs :cflag_defs /
   ;    # See legend below for list of constants imported
 
+use 5.008000;
+use ExtUtils::MakeMaker;
+
 # This next section is for Devel::CheckLib. I have hax0r3d this a tad. As well as checking
 # for the existance of the blkid library, I am also going to make a call on the lib to get
 # version data which is used to set a DEFINE for the C preprocessor. This will provide for
@@ -55,15 +58,16 @@ my $output = qq(
         Would you like to try dynamic libblkid version detection and configuration?
 
         Y/y or N/n: );
-print $output;
-my $line;
-chomp( $line = <STDIN> );
-$line = lc($line);    # Force lowercase
+
+my $default = 'Y'; # Default response to prompt
+my $response = prompt($output, $default);
+
+$response = lc($response);    # Force lowercase
 
 my $api_define;
 
 # User has opted for dynamic library version detection and configuration
-if ( $line eq 'y' ) {
+if ( $response eq 'y' ) {
     $api_define = check_blkid_version_or_exit(
         function => '
         const char *vers = NULL;
@@ -88,7 +92,7 @@ if ( $line eq 'y' ) {
 }
 
 # User has opted for manual selection of libblkid version
-elsif ( $line eq 'n' ) {
+elsif ( $response eq 'n' ) {
 
     $output = qq[
         The default is to build a v1.33 compliant interface as it will work with all e2fsprogs-based
@@ -106,19 +110,22 @@ elsif ( $line eq 'n' ) {
         3. v1.40 (compliant with all libblkid versions better than 1.40)
 
         Enter selection (Y/y for default or option 1, 2, 3): ];
-    print $output;
-    chomp( $line = <STDIN> );
-    $line = lc($line);
+    # print $output;
+    # chomp( $line = <STDIN> );
+
+    $default = 'Y';
+    $response = prompt($output, $default);
+    $response = lc($response);
 
     # Setup our DEFINE argument below which will be passed to gcc later
-    $api_define = API_DEF_133 if ( $line eq 'y' );
-    $api_define = API_DEF_136 if ( $line == 1 );
-    $api_define = API_DEF_138 if ( $line == 2 );
-    $api_define = API_DEF_140 if ( $line == 3 );
+    $api_define = API_DEF_133 if ( $response eq 'y' );
+    $api_define = API_DEF_136 if ( $response == 1 );
+    $api_define = API_DEF_138 if ( $response == 2 );
+    $api_define = API_DEF_140 if ( $response == 3 );
     eval {
         print("\tExiting, no Makefile has been built.\n");
         exit;
-    } if ( $line eq 'q' );
+    } if ( $response eq 'q' );
 
     unless ( defined($api_define) ) {
         warn("\tInvalid selection, exiting\n\n");
@@ -136,8 +143,6 @@ else {
     exit;
 }
 
-use 5.008000;
-use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME         => 'Device::Blkid::E2fsprogs',
