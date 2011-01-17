@@ -1,6 +1,6 @@
 package Device::Blkid::E2fsprogs;
 
-our $VERSION = '0.24';
+our $VERSION = '0.26';
 
 use 5.008000;
 use strict;
@@ -311,7 +311,7 @@ On success, returns a copy of the device iterator object or undef on fail.
 
 C<v1.38>
 
-=item C<dev_next($dev_iter, $device)>
+=item C<dev_next($dev_iter)>
 
 Returns the next device object in the iteration. Check for undef as an end of list sentinal.
 

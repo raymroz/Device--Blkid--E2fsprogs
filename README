@@ -1,4 +1,4 @@
-Device::Blkid::E2fsprogs version 0.24
+Device::Blkid::E2fsprogs version 0.26
 =====================================
 
 NOTE: This module only wraps the older e2fsprogs versions of libblkid (numbered 1.xx.x)

@@ -63,3 +63,7 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
         - Updated README with additional and more accurate information on installations and creating debug builds
         - Updated POD in E2fsprogs.pm file; blkid is better detailed. Some minor reorganizations as well.
         - Package version bumped to 0.24
+
+0.26  Mon Jan 17 06:45:21 AST 2011
+        - Changed Makefile.PL to use its own proper prompt() method rather than my own interactive logic which breaks tests
+        - Bumped versions to 0.26
