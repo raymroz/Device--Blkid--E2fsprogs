@@ -57,3 +57,9 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
         - E2fsprogs.xs has had the additional C preprocessor defines added to support versions 1.33-1.35
         - Commented out all but two tests in .t script; these require new approach with dynamic versioning
         - Package version bumped to 0.22
+
+0.24  Sun Jan 16 20:35:09 AST 2011
+        - Updated Makefile.PL with META_MERGE param to WriteMakefile()
+        - Updated README with additional and more accurate information on installations and creating debug builds
+        - Updated POD in E2fsprogs.pm file; blkid is better detailed. Some minor reorganizations as well.
+        - Package version bumped to 0.24
