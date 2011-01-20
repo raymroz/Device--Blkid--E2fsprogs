@@ -230,10 +230,14 @@ sub check_blkid_version_or_exit {
         print("\tBuilding module for those versions\n\n");
         return API_DEF_136;
     }
-    else {    # Default catch, something is not right
-        print("\tLibblkid seems present, but unable to detect its version.\n");
+    elsif ( $@ =~ /^133/ ) {
+        # Looks like we have a version 1.33-1.35 present, build baseline target
+        print("\tlibblkid seems present, but unable to detect its version.\n");
         print("\tBuilding a base v1.33 compliant module by default\n\n");
         return API_DEF_133;
+    } else { # default catch, reverts to check_lib_or_exit behavior, library/header not found..
+        warn $@;
+        exit;
     }
 }
 
@@ -387,10 +391,16 @@ sub assert_lib {
         # function behavior here and do custom version checks
         # otherwise revert to default
         if ( $args{blkid} ) {
+            # libblkid present and we are getting a good return, use it
             push @blkid_version, ( $? >> 8 )    # shift 8 for child's return
               if ( $rv == 0
                 && -x $exefile
-                && system( File::Spec->rel2abs($exefile) ) != 0 );
+                && system( File::Spec->rel2abs($exefile) ) > 0 );
+            # libblkid present but we can't link; missing version calls so build v1.33 base
+            push @blkid_version, ( 133 )  #  baseline
+              if ( $rv == 0
+                && -x $exefile
+                && system( File::Spec->rel2abs($exefile) ) == -1 );
         }
         else {
             push @wrongresult, $lib
@@ -414,9 +424,8 @@ sub assert_lib {
     ######################################################
     # If the 'blkid' argument flag is set, bypass original
     # function behavior here and do custom version checks
-    # otherwise revert to default
+    # otherwise revert to default basic lib check
     if ( $args{blkid} ) {
-
         # Throw the returned version identifier up
         my $blkid_version = shift @blkid_version;
         die($blkid_version) if ( $blkid_version != 0 );

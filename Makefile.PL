@@ -33,9 +33,8 @@ use ExtUtils::MakeMaker;
 # integer and since the return type is only a single byte in width, we need to drop the
 # last digit from versions > 2.00.0. Also note, the get version API calls first appeared
 # in version 1.36 of libblkid so dynamic version detection is not supported in versions
-# prior to this, although manual configuration can be either selected via the interactive
-# configuration phase of this script or by manually specifiying C preprocessor DEFINEs on
-# the command line when executing this script.
+# and as such, a baseline version 1.33 compliant target is built which will work with any
+# version of the library.
 
 # DEBUGGING and DEBUG builds
 # To build a DEBUG build of this module, please refer below to the DEFINE argument to the
@@ -52,24 +51,11 @@ use ExtUtils::MakeMaker;
 # API_DEF_138 => qq/-D__API_1_33 -D__API_1_36 -D__API_1_38/,
 # API_DEF_140 => qq/-D__API_1_33 -D__API_1_36 -D__API_1_38 -D__API_1_40/,
 
-# BEGIN the user interaction portion of this script
-my $output = qq(
-        Running Makefile.PL to perform package configuration.
-        Would you like to try dynamic libblkid version detection and configuration?
-
-        Y/y or N/n: );
-
-my $default = 'Y'; # Default response to prompt
-my $response = prompt($output, $default);
-
-$response = lc($response);    # Force lowercase
 
 my $api_define;
 
-# User has opted for dynamic library version detection and configuration
-if ( $response eq 'y' ) {
-    $api_define = check_blkid_version_or_exit(
-        function => '
+$api_define = check_blkid_version_or_exit(
+    function => '
         const char *vers = NULL;
         const char *date = NULL;
         int vernum = 0;
@@ -84,65 +70,11 @@ if ( $response eq 'y' ) {
             return(136); 
         return (-1); /* Default catch, something is borked */
         ',
-        incpath => '/usr/include/blkid',
-        lib     => 'blkid',
-        header  => [ 'blkid.h', 'stdio.h', 'stdlib.h' ],
-        blkid   => 1,
-    );
-}
-
-# User has opted for manual selection of libblkid version
-elsif ( $response eq 'n' ) {
-
-    $output = qq[
-        The default is to build a v1.33 compliant interface as it will work with all e2fsprogs-based
-        versions of libblkid. Keep in mind that attempting to build a version target which is more
-        recent than the version which you have installed will fail with linker errors. If you are not
-        entirely certain which version which you have installed, accepting the default here (a 'Y/y'
-        selection) is safest, however you may wish to try the dynamic version detection which should
-        accurately determine versions 1.36 and newer.
-
-        If the default v1.33 build target is acceptable to you, please answer 'Y/y', otherwise select
-        one of the following version bundles from the list, or 'Q/q' to quit:
-
-        1. v1.36 (compliant with libblkid versions 1.36-1.37)
-        2. v1.38 (compliant with libblkid versions 1.38-1.39)
-        3. v1.40 (compliant with all libblkid versions better than 1.40)
-
-        Enter selection (Y/y for default or option 1, 2, 3): ];
-    # print $output;
-    # chomp( $line = <STDIN> );
-
-    $default = 'Y';
-    $response = prompt($output, $default);
-    $response = lc($response);
-
-    # Setup our DEFINE argument below which will be passed to gcc later
-    $api_define = API_DEF_133 if ( $response eq 'y' );
-    $api_define = API_DEF_136 if ( $response == 1 );
-    $api_define = API_DEF_138 if ( $response == 2 );
-    $api_define = API_DEF_140 if ( $response == 3 );
-    eval {
-        print("\tExiting, no Makefile has been built.\n");
-        exit;
-    } if ( $response eq 'q' );
-
-    unless ( defined($api_define) ) {
-        warn("\tInvalid selection, exiting\n\n");
-        exit;
-    }
-
-    check_lib_or_exit(
-        incpath => '/usr/include/blkid',
-        lib     => 'blkid',
-        header  => [ 'blkid.h', 'stdio.h', 'stdlib.h' ],
-    );
-}
-else {
-    warn("\tInvalid selection, exiting.\n\n");
-    exit;
-}
-
+    incpath => '/usr/include/blkid',
+    lib     => 'blkid',
+    header  => [ 'blkid.h', 'stdio.h', 'stdlib.h' ],
+    blkid   => 1,
+);
 
 WriteMakefile(
     NAME         => 'Device::Blkid::E2fsprogs',
@@ -176,9 +108,9 @@ WriteMakefile(
 # to generate a Makefile which will produce a DEBUG build of this package.
 #
 # DEFINE => "$api_define -D__DEBUG",
-    DEFINE  => "$api_define",
-    INC     => '-I.',
-    LICENSE => 'perl',
+    DEFINE    => "$api_define",
+    INC       => '-I.',
+    LICENSE   => 'perl',
     EXE_FILES => [],
     dist      => { COMPRESS => 'gzip -9f', SUFFIX => 'gz' },
     clean => { FILES => 'Device-Blkid-E2fsprogs-*' },
