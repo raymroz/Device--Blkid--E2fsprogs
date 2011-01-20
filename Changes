@@ -67,3 +67,10 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
 0.26  Mon Jan 17 06:45:21 AST 2011
         - Changed Makefile.PL to use its own proper prompt() method rather than my own interactive logic which breaks tests
         - Bumped versions to 0.26
+
+0.28  Wed Jan 19 23:35:21 AST 2011
+        - Removed interactive version selection from Makefile.PL
+        - Makefile.PL and CheckLib now try detection, on fail build a baseline v1.33 target
+        - Updated README to reflect removal of interactive installation
+        - Updated POD to remove interactive  installation details
+        - Bumped version to 0.28

@@ -1,6 +1,6 @@
 package Device::Blkid::E2fsprogs;
 
-our $VERSION = '0.26';
+our $VERSION = '0.28';
 
 use 5.008000;
 use strict;
@@ -143,16 +143,14 @@ maintains a mapping of all of this composite information and maintains its assoc
 a given block device on the system. UUID and label-based fstab(5) file configurations have
 become common in modern Linux distributions. Having the capability to abstract block devices
 in this way and to maintain mappings between volumes and storage devices can make managing
-multiple storage devices a much less daunting task, where every change used to mean a
-broken fstab file entry; this is no longer the case as volumes and partitions may now be
-addressed via their blkid mapping.
+multiple storage devices a much less daunting task.
 
-The library provides for both low level probing of block devices for this information as well
-as access to an on disk cache file which is reconstructed at boot and at any time which this
-meta information is requested by the kernel. The presence of a cache file provides a way for
-unpriviledged users who do not have read access to a given volume or device a means of
-reliably accessing these mappings. Priviledged users may bypass the cache file altogether and
-force a low level probe of the target device.
+This library provides for low level probing of block devices to access the various meta data
+associated with the particular partition or volume as well as access to an on disk cache file
+which contains mappings between this information and each block device on the system. Access
+to this cache file is one way in which unpriviledged users who do not have read access to the
+particular block device can gain access to this information. Users with the necessary access
+can always opt to probe the block device directly for this information.
 
 This Perl extension to e2fsprogs-based versions of the libblkid library provides for the same
 access available from the C interface. It does not support the larger and more robust API which
@@ -170,7 +168,7 @@ exception catchable via an eval/if. Furthermore, several of the original library
 were passed in modifiable pointer arguments now return Perl hash representations of complex
 types where this made sense. See the interface documentation below for details on each call.
 
-Please read the README file in the package archive for instructions should you encounter any
+Please read the L<README> file in the package archive for instructions should you encounter any
 problems while using this software package, as well as for instructions on building a debug
 version and how to report any problems which you might have.
 
@@ -178,11 +176,10 @@ It is worth noting that between versions 1.33 and 1.41.4, the entire period whic
 was shipping as a part of the e2fsprogs package, the number of calls present in the API
 expanded from 17 in the original release of the library back in 2003 to 25 by the time it
 was migrated over to the util-linux-ng package in early 2009. This extension supports dynamic
-detection of the libblkid version on the target system from version 1.36 onward. This module
-may be installed on systems running versions 1.33 to 1.35 of libblkid as well but this will
-require that the target version is manually selected during initial package configuration
-with the Makefile.PL script.  Please refer to the following installation notes as well as
-to the more thoroughly documented README file at the top most level of this distribution.
+detection of the libblkid version on the target system from version 1.36 onward. In the event
+that a proper determination of version can be obtained and the library is confirmed to in
+fact be on the system, a default baseline version of 1.33 will be generated which will be
+compliant in all cases.
 
 =head2 INSTALLATION NOTES
 
@@ -196,23 +193,16 @@ for hints on troubleshooting. If you wish to report any problems with this versi
 please include any output from their installation process as well as a copy of your
 /usr/include/blkid/blkid.h file.
 
-Please note, dynamic version detection is optional and you are free to select a manual build
-target during the interactive configuration process.  Furthermore, the package Makefile.PL may
-be directly edited to suit your specific needs. Please see that file for further details; I
-have endeavored to keep it well commented, as well as all related changes and customizations
-made to the L<Devel::CheckLib> package. Please also refer to the package README file as it
-contains a more exhaustive treatment of this subject.
+For additional details regarding dynamic library version detection, please refer to the
+L<README> file at the top level of this package.
 
 =head2 DEPENDENCIES
 
 L<E2fsprogs v1.33-v1.41.4|http://e2fsprogs.sourceforge.net/>
 
 While this package is compatible with any version of e2fsprogs-based libblkid, dynamic version
-detection will only work on versions 1.36 and newer. It is possible to manually configure for
-versions 1.33-1.35 by choosing the manual version selection option during the interactive
-configuration phase of the Makefile.PL program. Users are also free to hand edit the Makefile.PL
-script as well as the L<Devel::CheckLib> module to suit their particular needs; I have endeavored
-to keep both files well documented to this end.
+detection will only work on versions 1.36 and newer. In cases where the proper version cannot
+be detected, a baseline version of v1.33 will be generated.
 
 =head2 EXPORT
 
@@ -503,6 +493,8 @@ load of time.  Thanks!
 
 Thanks to David Cantrell, David Golden and Yasuhiro Matsumoto for L<Devel::CheckLib>. I
 hacked it up a little bit to manage my dynamic version checks and build, hope you don't mind.
+
+Thanks to Tom Erskine for your insight and experience in all things Perl.
 
 I would also like to thank Larry McInnis for the loan of some hardware on which to develop
 this module. Most everything I have had been tied up and developing on the latest and greatest
