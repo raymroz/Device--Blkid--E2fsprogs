@@ -1,6 +1,6 @@
 package Device::Blkid::E2fsprogs;
 
-our $VERSION = '0.28';
+our $VERSION = '0.30';
 
 use 5.008000;
 use strict;
@@ -343,11 +343,13 @@ Throws exception on failure to allocate the device object.
 
 C<v1.33>
 
-=item C<get_dev_size(int $fd)>
+=item C<get_dev_size($devname)>
 
-Given a device object passed in over a file descriptor, this function returns the size of that device.
-Please note, this is a file descriptor and NOT a Perl file handle.  Please
-see POSIX::open in perldoc for further details.
+Given a device name, returns the size of the block device in bytes or undef on fail. Note, you must have
+read access to the device being probed, usually as root or a member of the disk group, otherwise this call
+will fail.
+
+  my $devsize = get_dev_size('/dev/sda1');
 
 C<v1.33>
 
