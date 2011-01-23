@@ -120,13 +120,9 @@ versions of the library.
 
 As all of the e2fsprogs versioned calls are present, if deprecated, in version 2.xx.x of the
 libblkid library, all older client code should be fully compatible with the new interface.
-There may, in practice, be problems with this assumption. I have personally observed in one
-instance where an older, deprecated call was not returning as was advertised and as it had
-done reliably under the older, version 1.xx builds of the library. Without further experience
-with the util-linux-ng versions of this library, I am unable to present any explanation for
-this. As a result, if you are moving older, e2fsprogs compliant libblkid client code over
-to a system with version 2.xx.x of the library, you would be well advised to thoroughly test
-it for compatibility with the new interface.
+There may, in practice, be problems with this assumption. As a result, if you are moving older,
+e2fsprogs compliant libblkid client code over to a system with version 2.xx.x of the library,
+you would be well advised to thoroughly test it for compatibility with the new interface.
 
 Finally, this version has been implemented somewhat differently than Bastian's util-linux-ng
 build of the library. He opted to keep much of his logic and processing in XSUB, mine is done
@@ -177,9 +173,9 @@ was shipping as a part of the e2fsprogs package, the number of calls present in 
 expanded from 17 in the original release of the library back in 2003 to 25 by the time it
 was migrated over to the util-linux-ng package in early 2009. This extension supports dynamic
 detection of the libblkid version on the target system from version 1.36 onward. In the event
-that a proper determination of version can be obtained and the library is confirmed to in
+that a proper determination of version cannot be obtained and the library is confirmed to in
 fact be on the system, a default baseline version of 1.33 will be generated which will be
-compliant in all cases.
+compliant with all possible versions of libblkid which shipped with the e2fsprogs package.
 
 =head2 INSTALLATION NOTES
 
@@ -187,8 +183,9 @@ This package has made use of a customized L<Devel::CheckLib> module and Makefile
 attempt to dynamically detect the version of libblkid currently installed on the target
 system and to then generate a PerlXS interface which directly targets and matches the interface
 of that libblkid version. This process is expected to work on all versions of libblkid later
-than v1.35. Should you have any problems with this process, evident either in running the
-Makefile.PL or in running make against the resulting Makefile, please see the Makefile.PL
+than v1.35. On versions 1.33 through to 1.35, a default baseline target for the v1.33 API is
+configured and built. Should you have any problems with this process, evident either in running
+the Makefile.PL or in running make against the resulting Makefile, please see the Makefile.PL
 for hints on troubleshooting. If you wish to report any problems with this version detection,
 please include any output from their installation process as well as a copy of your
 /usr/include/blkid/blkid.h file.
@@ -254,14 +251,18 @@ is a safe selection for any version of the library, keeping in mind of course th
 =item C<put_cache($cache)>
 
 Write any changes to the blkid cache file and explicitly frees associated resources. C<put_cache($cache)>
-should be called after you have been doing any work with a cache object.
+should be called after you have been doing any work with a cache object. Note, the cache object is freed
+by this call and as such must not be used by any subsequent operations. Further calls to C<put_cache> on
+an already deallocated cache structure result in a segfault from the libblkid library; it appears that
+this was never properly addressed, at least not in the e2fsprogs versions of this package.
 
 C<v1.33>
 
 =item C<get_cache($filename)>
 
 Given a path to a cache file, return a blkid cache object reference. This reference is of type
-C<Device::Blkid::E2fsprogs::Cache>. As with other allocated types, throws exception on fail state.
+C<Device::Blkid::E2fsprogs::Cache>. As with other calls which allocate any object types, this call
+throws en exception on failure..
 
 C<v1.33>
 
@@ -273,16 +274,16 @@ C<v1.40>
 
 =item C<dev_devname($device)>
 
-Given a blkid device object, returns a string representation of the device (e.g., /dev/sda9), undef
-if something went wrong. Device objects are of type C<Device::Blkid::E2fsprogs::Device>.
+Given a blkid device object, returns a string representation of the device (e.g., /dev/sda3), or undef
+on fail. Device objects are of type C<Device::Blkid::E2fsprogs::Device>.
 
 C<v1.33>
 
 =item C<dev_iterate_begin($cache)>
 
-Returns a device iterator object on the specified device cache. Device iterator onbects are of type
-C<Device::Blkid::E2fsprogs::DevIter>. As in the case of other allocated types, throws exception on
-fail state.
+Returns a device iterator object on the specified device cache. Device iterator objects are of type
+C<Device::Blkid::E2fsprogs::DevIter>. As in the case of other allocated types, this call throws an
+exception on fail.
 
 C<v1.33>
 
@@ -297,7 +298,7 @@ tag for example.
   # Set iterator to filter and match only on ext4 file systems
   dev_set_search($dev_iter, 'TYPE', 'ext4');
 
-On success, returns a copy of the device iterator object or undef on fail.
+A successful call returns a copy of the device iterator object being used, undef on fail.
 
 C<v1.38>
 
@@ -310,8 +311,8 @@ C<v1.33>
 =item C<dev_iterate_end($dev_iter)>
 
 Frees the allocated iterator object from memory, although this is redundant; simply undef'ing the object to
-remove references to it or allowing it to go out of scope will also free the memory by design. (May be removed
-in a future version).
+remove references to it or allowing it to go out of scope will also free the memory as well. Note, this call
+may be removed in a future version.
 
 C<v1.33>
 
@@ -339,7 +340,7 @@ C<v1.38>
 
 Returns a device object based upon the input criteria. Please refer to the constants sections to see what
 flags may be passed in to determine behaviour. Device objects are of type C<Device::Blkid::E2fsprogs::Device>.
-Throws exception on failure to allocate the device object.
+Throws exception on any failure to allocate the device object.
 
 C<v1.33>
 
@@ -362,13 +363,13 @@ C<v1.33>
 =item C<known_fstype($fstype)>
 
 Determines if a file system type is known to libblkid. If the file system is known, it returns the input
-argument string, otherwise undef is returned.
+file system argument string, otherwise undef.
 
 C<v1.34>
 
 =item C<verify($cache, $device)>
 
-Attempts to verify that the device object is a valid blkid device. Returns the instance of the valid device
+Attempts to verify that the device object is a valid blkid device. Returns the instance of the current device
 object on success, otherwise undef is returned to indicate failure.
 
 C<v1.36>
@@ -377,27 +378,29 @@ C<v1.36>
 
 Given a valid $cache object, $tagname and $devname, this function returns the value to which the tag refers.
 
-  # Given the following and assuming them valid on this system
   my $tagname = 'LABEL';
   my $devname = '/dev/sda4';
 
-  # The following say prints '/home' in this example
   my $tag_value = get_tag_value($cache, $tagname, $devname);
-  say $tag_value;
 
 C<v1.33>
 
 =item C<get_devname($cache, $token, $value)>
 
-Similar to the last call, given a valid $cache object and token and value parameters, will return the
-devname of the block device.
+Similar to the last call, given a valid $cache object and $token and $value parameters, will return the
+device name of the specified block device (eg. /dev/sda1).
+
+  my $token = 'UUID';
+  my $value = '2b5c78cb-acc5-4ffa-83b6-deb099bb22cf';
+
+  my $devname = get_devname($cache, $token, $value);
 
 C<v1.33>
 
 =item C<tag_iterate_begin($device)>
 
-Returns a tag iterater object on a valid device type, of type C<Device::Blkid::E2fsprogs::TagIter>. Throws
-exception on fail state.
+Returns a tag iterater object on a valid device type, of type C<Device::Blkid::E2fsprogs::TagIter>. Any
+failure to allocate an iterator object results in a thrown exception.
 
 C<v1.33>
 
@@ -413,7 +416,8 @@ C<v1.33>
 =item C<tag_iterate_end($tag_iter)>
 
 Frees the memory allocated for the tag iterator object. This is redundant as the memory can be freed by
-removing references to the object, undef'ing it or allowing it to leave scope.
+removing references to the object, undef'ing it or allowing it to leave scope. Note, this call may be
+removed in a future version of this extension.
 
 C<v1.33>
 
@@ -490,7 +494,7 @@ Cleanup preprocessor code when everything checks out stable.
 
 Consider eliminating redundant calls and implementing an even more 'Perlish' design.
 
-Test scripts, test scripts, test scripts.
+Test scripts; handle multiple version targets.
 
 =head1 CREDITS
 

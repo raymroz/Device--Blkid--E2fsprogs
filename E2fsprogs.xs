@@ -215,14 +215,15 @@ Device _blkid_get_dev(Cache cache, const char *devname, int flags)
     Device device = NULL;
 
     /* If we get a NULL, something is wrong, print error and return NULL(undef) */
-    if ( blkid_get_dev(cache, devname, flags) == NULL )
+    device = blkid_get_dev(cache, devname, flags);
+    if (device == NULL)
     {
         #ifdef __DEBUG
         perror("\tDEBUG: blkid_get_dev(): Error retrieving device object");
         #endif //__DEBUG
         croak("Error retrieving device object: %s\n", strerror(errno));
     }
-
+    
     return device;
 }
 
