@@ -107,7 +107,7 @@ WriteMakefile(
 # string. After this has been done, re-run the Makefile.PL as in a normal configuration
 # to generate a Makefile which will produce a DEBUG build of this package.
 #
-# DEFINE => "$api_define -D__DEBUG",
+#   DEFINE => "$api_define -D__DEBUG",
     DEFINE    => "$api_define",
     INC       => '-I.',
     LICENSE   => 'perl',
