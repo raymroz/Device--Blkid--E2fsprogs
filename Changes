@@ -82,3 +82,4 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
           allocation.
         - Updated POD details on get_dev_size call changes
         - Added block device test image file to project for unit test scripts ( t/img/ext3.fs )
+        - Added 02-dev_size.t test script
