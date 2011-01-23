@@ -228,7 +228,7 @@ Device _blkid_get_dev(Cache cache, const char *devname, int flags)
 
 
 /* extern blkid_loff_t blkid_get_dev_size(int fd) */
-const char *_blkid_get_dev_size(const char *devname)
+SV *_blkid_get_dev_size(const char *devname)
 {
     #ifdef __DEBUG
     printf("\tDEBUG: _blkid_get_dev_size()\n");
@@ -236,10 +236,10 @@ const char *_blkid_get_dev_size(const char *devname)
     assert(devname);
     #endif //__DEBUG
 
-    int fd   = 0;
-    int size = 0;
-    const char *dev_size = NULL;
-    
+    int fd      = 0;
+    IV iv_size  = 0;
+    SV *sv_size = NULL;
+
     fd = open(devname, O_RDONLY);
     if (fd == -1)
     {
@@ -247,19 +247,20 @@ const char *_blkid_get_dev_size(const char *devname)
         perror("\tDEBUG: _blkid_get_dev_size(): Bad file descriptor");
         #endif //__DEBUG
 
-        return NULL;
+        croak("File descriptor allocation : %s", strerror(errno));
     }
 
     /* Grab a size, returns a 1 on fail, we return NULL(undef) */
-    size = blkid_get_dev_size(fd);
-    if (size == 1)
+    iv_size = blkid_get_dev_size(fd);
+
+    if (iv_size == 1)
     {
         #ifdef __DEBUG
         printf("\tDEBUG: _blkid_get_dev_size()\n");
         printf("\tDEBUG: invalid result on size\n");
         #endif //__DEBUG
         
-        return NULL;
+        return &PL_sv_undef;
     }
 
     /* close the fd, error if there is a problem */
@@ -269,42 +270,14 @@ const char *_blkid_get_dev_size(const char *devname)
         perror("\t_blkid_get_dev_size(): error closing fd");
         #endif //__DEBUG
 
-        return NULL;
+        croak("File descriptor close : %s", strerror(errno));
     }
-    
-    /* Create the C string in which to return the size to Perl. A string
-     * here allows for a more perlish feel and is not a problem given
-     * that strings and ints are both scalar types in perl and contextual.
-     * This also allows for easily returning undefs (NULLs)
-     */
-    if ( sprintf(dev_size, "%d", size) < 0 )
-    {
-        #ifdef __DEBUG
-        perror("_blkid_get_dev_size(): error creating size string");
-        #endif //__DEBUG
 
-        return NULL;
-    }
+    /* Load a SV* with IV for return */
+    sv_size = newSViv(iv_size);    
     
-    return dev_size;
+    return sv_size;
 }
-
-
-/* /\* extern blkid_loff_t blkid_get_dev_size(int fd) *\/ */
-/* blkid_loff_t _blkid_get_dev_size(int fd) */
-/* { */
-/*     #ifdef __DEBUG */
-/*     printf("\tDEBUG: _blkid_get_dev_size()\n"); */
-/*     printf("\tDEBUG: arg(1): fd:%d\n", fd); */
-/*     assert(fd > 0); */
-/*     #endif //__DEBUG */
-
-/*     /\* TODO: Determine what, if anything, is returned on error condition */
-/*      *       when a bad fd is passed in and then implement a 'perlish' */
-/*      *       return to this function. */
-/*      *\/ */
-/*     return blkid_get_dev_size(fd); */
-/* } */
 
 
 /* extern char *blkid_get_tag_value(blkid_cache cache, const char *tagname, const char *devname) */
@@ -797,7 +770,7 @@ Device _blkid_get_dev(cache, devname, flags)
                        int            flags
 
 
-const char *_blkid_get_dev_size(devname)
+SV *_blkid_get_dev_size(devname)
                        const char *   devname
 
 

@@ -345,11 +345,17 @@ C<v1.33>
 
 =item C<get_dev_size($devname)>
 
-Given a device name, returns the size of the block device in bytes or undef on fail. Note, you must have
-read access to the device being probed, usually as root or a member of the disk group, otherwise this call
-will fail.
+Given a device name, returns the size of the block device in bytes. Note, this underlying library call
+works with a file descriptor to the block device in question so you must have read access to the device
+being probed, usually as root or a member of the disk group, otherwise this call will fail and throw
+an exception. This call will also return undef should the actual libblkid call fail for any reason which
+does not generate an exception (i.e. a non-file descriptor related issue).
 
-  my $devsize = get_dev_size('/dev/sda1');
+  local $@;
+  my $devsize = eval { get_dev_size('/dev/sda1') };
+  if ($@) {
+      # Handle exception here, fd related problem
+  }
 
 C<v1.33>
 
