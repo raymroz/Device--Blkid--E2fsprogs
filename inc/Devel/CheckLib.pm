@@ -397,7 +397,7 @@ sub assert_lib {
                 && -x $exefile
                 && system( File::Spec->rel2abs($exefile) ) > 0 );
             # libblkid present but we can't link; missing version calls so build v1.33 base
-            push @blkid_version, ( 133 )  #  baseline
+            push @blkid_version, ( '133' )  #  baseline
               if ( $rv == 0
                 && -x $exefile
                 && system( File::Spec->rel2abs($exefile) ) == -1 );
