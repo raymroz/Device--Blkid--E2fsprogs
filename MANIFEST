@@ -8,6 +8,7 @@ ppport.h
 README
 t/00-load.t
 t/01-blkid_cache.t
+t/02-dev_size.t
 t/img/ext3.fs
 lib/Device/Blkid/E2fsprogs.pm
 typemap
