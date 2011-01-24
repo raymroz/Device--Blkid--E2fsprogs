@@ -5,7 +5,7 @@
  * E2fsprogs.xs
  * December 2010
  *
- * Version: 0.3001
+ * Version: 0.32
  */
 
 
