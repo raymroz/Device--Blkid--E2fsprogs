@@ -75,7 +75,7 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
         - Updated POD to remove interactive  installation details
         - Bumped version to 0.28
 
-0.30  Wed Jan 22 18:02:49 AST 2011
+0.30  Sat Jan 22 18:02:49 AST 2011
         - Changed blkid_get_dev_size wrapper in E2fsprogs.xs so that it now accepts the string name representation of the
           device rather than a POSIX file descriptor to achieve a more Perlish interface
         - The get_dev_size function now returns an exception anytime there is a problem originating from a file descriptor
