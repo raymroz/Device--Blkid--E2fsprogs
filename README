@@ -1,5 +1,5 @@
-Device::Blkid::E2fsprogs version 0.30
-=====================================
+Device::Blkid::E2fsprogs version 0.3001
+=======================================
 
 NOTE: This extension only supports the older e2fsprogs versions of libblkid (numbered 1.xx.x)
 and not the newer versions now bundled as a part of util-linux-ng (v2.15 or better). In almost
