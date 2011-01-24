@@ -136,7 +136,7 @@ Libblkid provides a means of identifying block devices as to their content (such
 as well as allowing for the extraction of additional meta information such as filesystem labels,
 volume labels, serial numbers, device numbers, unique identifiers, etc. The libblkid library
 maintains a mapping of all of this composite information and maintains its association with
-a given block device on the system. UUID and label-based fstab(5) file configurations have
+a given block device on the system. UUID and label-based L<fstab(5)> file configurations have
 become common in modern Linux distributions. Having the capability to abstract block devices
 in this way and to maintain mappings between volumes and storage devices can make managing
 multiple storage devices a much less daunting task.
@@ -164,7 +164,7 @@ exception catchable via an eval/if. Furthermore, several of the original library
 were passed in modifiable pointer arguments now return Perl hash representations of complex
 types where this made sense. See the interface documentation below for details on each call.
 
-Please read the L<README> file in the package archive for instructions should you encounter any
+Please read the C<README> file in the package archive for instructions should you encounter any
 problems while using this software package, as well as for instructions on building a debug
 version and how to report any problems which you might have.
 
@@ -191,7 +191,7 @@ please include any output from their installation process as well as a copy of y
 /usr/include/blkid/blkid.h file.
 
 For additional details regarding dynamic library version detection, please refer to the
-L<README> file at the top level of this package.
+C<README> file at the top level of this package.
 
 =head2 DEPENDENCIES
 
