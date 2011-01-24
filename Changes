@@ -90,3 +90,6 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
         - New test script, 03-dev_tag.t added
         - Changes file corrected
         - Version bumped to 0.3001
+
+0.32 Mon Jan 24 02:16:53 AST 2011
+        - Bumped bugfix release to version 0.33
