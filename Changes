@@ -93,3 +93,8 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
 
 0.32 Mon Jan 24 02:16:53 AST 2011
         - Bumped bugfix release to version 0.33
+
+0.34 Mon Jan 24 23:49:20 AST 2011
+        - Cleaned up POD in E2fsprogs.pm, typo corrections, clarifications
+        - Added additional tests in 03-dev_tag.t unit test script
+        - Version bumped to 0.34
