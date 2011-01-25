@@ -180,7 +180,9 @@ configured for build. Should you have any problems with this process, evident ei
 the Makefile.PL or in running make against the resulting Makefile, please see the Makefile.PL
 for hints on troubleshooting. If you wish to report any problems with this version detection,
 please include any output from the installation process as well as a copy of your
-/usr/include/blkid/blkid.h file.
+/usr/include/blkid/blkid.h file. Finally, in cases where you are running version 1.34 or 1.35,
+and where you require inclusion of the known_fstype() function in this package, you will be
+required to manually modify the Makefile.PL to achieve this end.
 
 For additional details regarding dynamic library version detection, please refer to the
 C<README> file at the top level of this package.
@@ -230,14 +232,9 @@ Get a valid device structure, either from the cache or by probing the block devi
 
 =head2 FUNCTIONS
 
-All function calls detailed below also contain the version of libblkid in which they first appeared
+All function calls detailed below also list the version of libblkid in which they first appeared
 as a part of the library. As has been noted above, all of these calls should also be valid in the
-newer util-linux-ng versions of this interface. Please note, when manually selecting a target version
-during initial package configuration and installation, make sure that you do not 'overshoot' the
-version which is actually installed otherwise installation of this package will fail. When in
-doubt, select dynamic version detection or accept the default baseline version, v1.33, which
-is a safe selection for any version of the library, keeping in mind of course that there may be
-"gaps" in the interface.
+newer util-linux-ng versions of this interface.
 
 =over 4
 
@@ -422,12 +419,12 @@ otherwise undef.
 
 C<v1.38>
 
-=item C<find_dev_with_tag(cache, type, value)>
+=item C<find_dev_with_tag($cache, $type, $value)>
 
 Given a tag type and value, crawls the blkid cache for a match and returns an instance of the device if
 found, undef on failure.
 
-=item C<parse_tag_string()>
+=item C<parse_tag_string($tag_pair)>
 
 Given an tag pair input value in C<type=value> format, returns a hash reference containing the two
 constituent values as they are associated with the input keys. Returns undef in the event of a failure.
