@@ -1,4 +1,4 @@
-Device::Blkid::E2fsprogs version 0.34
+Device::Blkid::E2fsprogs version 0.36
 =====================================
 
 NOTE: This extension only supports the older e2fsprogs versions of libblkid (numbered 1.xx.x)
@@ -48,8 +48,7 @@ with object allocations will throw a catchable exception when something goes wro
 types are returned as well in a number of cases.
 
 Please read the README file in the package archive for instructions should you encounter any
-problems while using this software package, as well as for instructions on building a debug
-version.
+problems while using this software package.
 
 E2FSPROGS-LIBBLKID VERSION HISTORY
 
@@ -119,24 +118,14 @@ E2fsprogs v1.33-v1.41
         this on your target system, please refer to the Makefile.PL as well as Devel::CheckLib
         files; both are well documented and relatively easy to modify.
 
-DEBUGGING and REPORTING A BUG
+REPORTING A BUG
 
 If you have any problems with the functioning of this library, please contact me at my CPAN
 address at mroz@cpan.org. Please be sure and include a list of relevant packages installed on
 your system or at least the exact version of e2fsprogs which you have installed, perhaps by
 providing the blkid.h file.
 
-Also, please build and install a DEBUG build of this module. The quickest way to generate a
-DEBUG build of this package is by making a quick edit to the Makefile.PL file and uncommenting
-the prefab DEFINE argument to the WriteMakefile() function call. Please refer to the details
-on doing this found in the Makefile.PL file. After you have so configured your Makefile.PL,
-run the initial configuration program as you would for a normal installation.
-
-The DEBUG builds of this module generate a much higher degree of verbosity in output to STDOUT.
-Please copy any output to STDOUT when you experience problems and be sure and include it in
-any submission you send to me detailing your problem.
-
-Furthermore, should you find any problems with this package and wish to submit a patch, please
+Should you find any problems with this package and wish to submit a patch, please
 send the unified diff to my CPAN address including full patch instructions as well as a
 description of what issue or bug you have found and addressed. Please patch as per recommended
 best practices found in the patch(1) man page, under "NOTES FOR PATCH SENDERS".
