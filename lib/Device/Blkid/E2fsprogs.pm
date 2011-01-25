@@ -1,13 +1,12 @@
 package Device::Blkid::E2fsprogs;
 
-our $VERSION = '0.34';
+our $VERSION = '0.36';
 
 use 5.008000;
 use strict;
 use warnings;
 
 require Exporter;
-
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = (
@@ -147,18 +146,17 @@ This Perl extension to e2fsprogs-based versions of the libblkid library provides
 functionality exposed by the C interface. As was noted, it does not support the larger and
 more robust API which has been added to the libblkid library since its inclusion in the
 util-linux-ng package. To access these newer versions of the library, please see the
-L<Device::Blkid? package.
+L<Device::Blkid> package.
 
 I have endeavored to provide a more Perlish interface to the library rather than just do
 straight mappings or wrappers over the C functions. Most library calls will return an undef
 on failure. Those which return data structures which are allocated in memory will throw an
-exception catchable via an eval/if. Furthermore, several of the original library calls which
+exception catchable via an C<eval/if>. Furthermore, several of the original library calls which
 were passed in modifiable pointer arguments now return Perl hash representations of complex
 types where this made sense. See the interface documentation below for details on each call.
 
-Please refer to the C<README> file in the package archive for instructions should you encounter
-any problems while using this software package, as well as for instructions on building a debug
-version and how to report any problems which you might have.
+Please refer to the F<README> file in the package archive for instructions should you encounter
+any problems while using this software package.
 
 It is worth noting that between versions 1.33 and 1.41.x, the entire period which libblkid
 was shipping as a part of the e2fsprogs package, the number of calls present in the API
@@ -171,21 +169,21 @@ compliant with all possible versions of libblkid which shipped with the e2fsprog
 
 =head2 INSTALLATION NOTES
 
-This package has made use of a customized L<Devel::CheckLib> module and Makefile.PL in an
+This package has made use of a customized L<Devel::CheckLib> module and F<Makefile.PL> in an
 attempt to dynamically detect the version of libblkid currently installed on the target
 system and to then generate a PerlXS interface which directly targets and matches the interface
 of that libblkid version. This process is expected to work on all versions of libblkid later
 than v1.35. On versions 1.33 through to 1.35, a default baseline target for the v1.33 API is
 configured for build. Should you have any problems with this process, evident either in running
-the Makefile.PL or in running make against the resulting Makefile, please see the Makefile.PL
+the F<Makefile.PL> or in running make against the resulting F<Makefile>, please see the F<Makefile.PL>
 for hints on troubleshooting. If you wish to report any problems with this version detection,
 please include any output from the installation process as well as a copy of your
-/usr/include/blkid/blkid.h file. Finally, in cases where you are running version 1.34 or 1.35,
-and where you require inclusion of the known_fstype() function in this package, you will be
-required to manually modify the Makefile.PL to achieve this end.
+F</usr/include/blkid/blkid.h> file. Finally, in cases where you are running version 1.34 or 1.35,
+and where you require inclusion of the L</known_fstype> function in this package, you will be
+required to manually modify the F<Makefile.PL> to achieve this end.
 
 For additional details regarding dynamic library version detection, please refer to the
-C<README> file at the top level of this package.
+F<README> file at the top level of this package.
 
 =head2 DEPENDENCIES
 
@@ -240,10 +238,10 @@ newer util-linux-ng versions of this interface.
 
 =item C<put_cache($cache)>
 
-Write any changes to the blkid cache file and explicitly frees associated resources. C<put_cache($cache)>
+Write any changes to the blkid cache file and explicitly frees associated resources. L</put_cache()>
 should be called after you have been doing any work with a cache object. Note, the cache object is freed
-by this call and as such must not be used by any subsequent operations. Further calls to C<put_cache> on
-an already deallocated cache structure result in a segfault from the libblkid library so guard against
+by this call and as such must not be used by any subsequent operations. Further calls to L</put_cache()>
+on an already deallocated cache structure result in a segfault from the libblkid library so guard against
 this.
 
 C<v1.33>
@@ -282,8 +280,8 @@ C<v1.33>
 This function places a search filter on the specified device iterator based upon the criteria passed
 in on the final two arguments of the function. After this function has been called on the given iterator
 with a type and value argument, the iterator will only return onjects which match the specified criteria.
-Please note, the $type argument can also contain any valid blkid entity category, such as a LABEL or UUID
-tag. A successful call returns a copy of the device iterator object being used, undef on fail.
+Please note, the C<$type> argument can also contain any valid blkid entity category, such as a LABEL or
+UUID tag. A successful call returns a copy of the device iterator object being used, undef on fail.
 
   # Set iterator to filter and match only on ext4 file systems
   dev_set_search($dev_iter, 'TYPE', 'ext4');
@@ -332,7 +330,7 @@ C<v1.38>
 Returns a device object based upon the input criteria. Please refer to the constants sections to see what
 flags may be passed in to determine behaviour. Device objects are of type C<Device::Blkid::E2fsprogs::Device>.
 Throws exception on any failure to allocate the device object.
-
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 C<v1.33>
 
 =item C<get_dev_size($devname)>
@@ -367,7 +365,7 @@ C<v1.36>
 
 =item C<get_tag_value($cache, $tagname, $devname)>
 
-Given a valid $cache object, $tagname and $devname, this function returns the value to which the tag refers.
+Given a valid C<$cache> object, $tagname and $devname, this function returns the value to which the tag refers.
 
   my $tagname = 'LABEL';
   my $devname = '/dev/sda4';
@@ -378,8 +376,8 @@ C<v1.33>
 
 =item C<get_devname($cache, $token, $value)>
 
-Similar to the last call, given a valid $cache object and $token and $value parameters, will return the
-device name of the specified block device (eg. /dev/sda1).
+Similar to the last call, given a valid C<$cache> object and C<$token> and C<$value> parameters, will return the
+device name of the specified block device (e.g., 000000000000000000000000000000000000000000000000000000000000000/dev/sda1).
 
   my $token = 'UUID';
   my $value = '2b5c78cb-acc5-4ffa-83b6-deb099bb22cf';
