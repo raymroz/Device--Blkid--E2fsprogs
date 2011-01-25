@@ -100,14 +100,6 @@ WriteMakefile(
     ),
     LIBS          => ['-lblkid'],
     NEEDS_LINKING => 1,
-
-# To create a DEBUG build of this module, uncomment the first DEFINE which follows
-# this text and comment out the DEFINE argument immediately following it.
-# Be sure to leave the string double quoted so that it remains an interpolated
-# string. After this has been done, re-run the Makefile.PL as in a normal configuration
-# to generate a Makefile which will produce a DEBUG build of this package.
-#
-#   DEFINE => "$api_define -D__DEBUG",
     DEFINE    => "$api_define",
     INC       => '-I.',
     LICENSE   => 'perl',
