@@ -98,3 +98,10 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
         - Cleaned up POD in E2fsprogs.pm, typo corrections, clarifications
         - Added additional tests in 03-dev_tag.t unit test script
         - Version bumped to 0.34
+
+0.36 Tue Jan 25 07:01:54 AST 2011
+        - Removed C preprocessor debug code from E2fsprogs.xs
+        - Corrected POD typos
+        - Removed debug build information from README, POD
+        - Removed DEBUG define from Makefile.PL
+        - Version bumped to 0.36
