@@ -1,6 +1,6 @@
 package Device::Blkid::E2fsprogs;
 
-our $VERSION = '0.32';
+our $VERSION = '0.34';
 
 use 5.008000;
 use strict;
@@ -500,7 +500,7 @@ load of time while running my test C calls. Thanks!
 Thanks to David Cantrell, David Golden and Yasuhiro Matsumoto for L<Devel::CheckLib>. I
 hacked it up a little bit to manage my dynamic version checks and build, hope you don't mind.
 
-Thanks to Tom Erskine for your invaluable insight and experience in all things Perl.
+Thanks to Tom Erskine for your insight and experience in all things Perl.
 
 I would also like to thank Larry McInnis for the loan of some hardware on which to develop
 this module. Most everything I have had been tied up and developing on the latest and greatest
