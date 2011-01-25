@@ -1,6 +1,6 @@
 use File::Spec;
 
-use Test::More tests => 7;
+use Test::More tests => 12;
 BEGIN { use_ok( 'Device::Blkid::E2fsprogs', qw/ :funcs :consts / ) };
 
 #########################
@@ -36,3 +36,21 @@ ok($devname eq $blk_dev,        'Check device name from LABEL');
 
 $devname = get_devname($cache, 'UUID', $uuid);
 ok($devname eq $blk_dev,        'Check device name from UUID');
+
+$dev_iter = dev_iterate_begin($cache);
+isa_ok($dev_iter, 'DevIter',    'Device iterator type match');
+
+$device = dev_next($dev_iter);
+isa_ok($device, 'Device',       'Valid device returned from iteration');
+
+$tag_iter = tag_iterate_begin($device);
+isa_ok($tag_iter, 'TagIter',    'Tag iterator type match');
+
+$tag_ref_a = tag_next($tag_iter);
+$tag_ref_b = tag_next($tag_iter);
+
+$tag_ref_1 = parse_tag_string("$tag_ref_a->{type}=$tag_ref_a->{value}");
+$tag_ref_2 = parse_tag_string("$tag_ref_b->{type}=$tag_ref_b->{value}");
+
+is_deeply($tag_ref_a, $tag_ref_1,       'First type=value pair match');
+is_deeply($tag_ref_b, $tag_ref_2,       'Second type=value pair match');
