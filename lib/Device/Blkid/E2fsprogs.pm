@@ -71,14 +71,13 @@ Device::Blkid::E2fsprogs - Perl interface to e2fsprogs-based libblkid (v1.33 - v
 
   use Device::Blkid::E2fsprogs qw/ :funcs /;
 
-  # Get a cache object from libblkid, checking for exception
+  # Get a cache object, checking for exception
   my $cache_file = '/etc/blkid/blkid.tab';
 
   local $@;
-  my $cache - eval { get_cache($cache_file) };
+  my $cache = eval { get_cache($cache_file) };
   if ($@) {
-      # Do something, log or die
-      die "Error while obtaining cache file: $@";
+      die $@;
   }
 
   # Get the device associated with a given blkid LABEL
@@ -91,11 +90,11 @@ Device::Blkid::E2fsprogs - Perl interface to e2fsprogs-based libblkid (v1.33 - v
   # Get a Device::Blkid::E2fsprogs::Device object
   my $device = get_dev($cache, $devname, $flags);
 
-  # Get device iterator, checking for exceptions
+  # Get a device iterator, checking for exception
   local $@;
   my $dev_iter = eval { dev_iterate_begin($cache) };
   if ($@) {
-      # Handle exception or not
+      die $@;
   }
 
   # And now iterate over list of devices
@@ -108,23 +107,19 @@ Device::Blkid::E2fsprogs - Perl interface to e2fsprogs-based libblkid (v1.33 - v
 
 =head3 Important Note
 
-This library is only compatible with those versions of libblkid which shipped as a part of the
+This library is compatible with those versions of libblkid which shipped as a part of the
 e2fsprogs package, i.e., those versions of the library numbered 1.xx. While this package
-should work with the newer 2.xx.x versions of libblkid which are bundled with the util-linux-ng
-package, this is not recommended and will actually fail given the default library version
-checking which is done in the Makefile.PL configuration script. In most cases users would
-be advised to use Bastian Friedrich's util-linux-ng based L<Device::Blkid> module as the newer
-lib interface is reportedly backward compatible with the old one anyway. Use of this package
-should be limited to those cases where the user is bound by constraint to the older, e2fsprogs
-versions of the library.
+should be fully compliant with the newer util-linux-ng based versions of the libblkid interface,
+it is not recommended that you use it; without modifications to the configuration scripts, it
+will fail to install on such systems in any event.
 
-As all of the e2fsprogs versioned calls are present, if deprecated, in version 2.xx.x of the
-libblkid library, all older client code should be fully compatible with the new interface.
-There may, in practice, be problems with this assumption. As a result, if you are moving older,
-e2fsprogs compliant libblkid client code over to a system with version 2.xx.x of the library,
-you would be well advised to thoroughly test it for compatibility with the new interface.
+If the target system is running the util-linux-ng versions of libblkid, indicated by a 2.x
+version number, you would be advised to use Bastian Friedrich's L<Device::Blkid> package
+instead. Those versions of the library feature a richer and more robust interface which this
+package does not support. This package is generally recommended in those cases where you are
+bound by constraint to the e2fsprogs-based versions of the libblkid library.
 
-Finally, this version has been implemented somewhat differently than Bastian's util-linux-ng
+Finally, this extension has been implemented somewhat differently than Bastian's util-linux-ng
 build of the library. He opted to keep much of his logic and processing in XSUB, mine is done
 mostly in C; I have only used XSUB for my straight glue, everything else I have kept in C and
 have used the Perl API. This should not to be taken as any sort of statement about XS/XSUB but
@@ -149,13 +144,10 @@ particular block device can gain access to this information. Users with the nece
 can always opt to probe the block device directly for this information.
 
 This Perl extension to e2fsprogs-based versions of the libblkid library provides for the same
-access available from the C interface. It does not support the larger and more robust API which
-has been added and integrated into the libblkid library since its inclusion in the util-linux-ng
-package. That said, the libblkid which now ships with util-linux-ng is reportedly backward
-compatible with client code dependant upon the older, original library which would mean that
-this module should work with it, albeit with the more limited selection of API calls. Please
-see the preceding note for additional details regarding the differences between these two
-distinct versions of the library.
+functionality exposed by the C interface. As was noted, it does not support the larger and
+more robust API which has been added to the libblkid library since its inclusion in the
+util-linux-ng package. To access these newer versions of the library, please see the
+L<Device::Blkid? package.
 
 I have endeavored to provide a more Perlish interface to the library rather than just do
 straight mappings or wrappers over the C functions. Most library calls will return an undef
@@ -164,11 +156,11 @@ exception catchable via an eval/if. Furthermore, several of the original library
 were passed in modifiable pointer arguments now return Perl hash representations of complex
 types where this made sense. See the interface documentation below for details on each call.
 
-Please read the C<README> file in the package archive for instructions should you encounter any
-problems while using this software package, as well as for instructions on building a debug
+Please refer to the C<README> file in the package archive for instructions should you encounter
+any problems while using this software package, as well as for instructions on building a debug
 version and how to report any problems which you might have.
 
-It is worth noting that between versions 1.33 and 1.41.4, the entire period which libblkid
+It is worth noting that between versions 1.33 and 1.41.x, the entire period which libblkid
 was shipping as a part of the e2fsprogs package, the number of calls present in the API
 expanded from 17 in the original release of the library back in 2003 to 25 by the time it
 was migrated over to the util-linux-ng package in early 2009. This extension supports dynamic
@@ -184,10 +176,10 @@ attempt to dynamically detect the version of libblkid currently installed on the
 system and to then generate a PerlXS interface which directly targets and matches the interface
 of that libblkid version. This process is expected to work on all versions of libblkid later
 than v1.35. On versions 1.33 through to 1.35, a default baseline target for the v1.33 API is
-configured and built. Should you have any problems with this process, evident either in running
+configured for build. Should you have any problems with this process, evident either in running
 the Makefile.PL or in running make against the resulting Makefile, please see the Makefile.PL
 for hints on troubleshooting. If you wish to report any problems with this version detection,
-please include any output from their installation process as well as a copy of your
+please include any output from the installation process as well as a copy of your
 /usr/include/blkid/blkid.h file.
 
 For additional details regarding dynamic library version detection, please refer to the
@@ -199,7 +191,8 @@ L<E2fsprogs v1.33-v1.41.4|http://e2fsprogs.sourceforge.net/>
 
 While this package is compatible with any version of e2fsprogs-based libblkid, dynamic version
 detection will only work on versions 1.36 and newer. In cases where the proper version cannot
-be detected, a baseline version of v1.33 will be generated.
+be detected, a baseline version of v1.33 will be generated and this version target will be
+compatible with whatever version happens to be on the target system.
 
 =head2 EXPORT
 
@@ -253,16 +246,16 @@ is a safe selection for any version of the library, keeping in mind of course th
 Write any changes to the blkid cache file and explicitly frees associated resources. C<put_cache($cache)>
 should be called after you have been doing any work with a cache object. Note, the cache object is freed
 by this call and as such must not be used by any subsequent operations. Further calls to C<put_cache> on
-an already deallocated cache structure result in a segfault from the libblkid library; it appears that
-this was never properly addressed, at least not in the e2fsprogs versions of this package.
+an already deallocated cache structure result in a segfault from the libblkid library so guard against
+this.
 
 C<v1.33>
 
 =item C<get_cache($filename)>
 
 Given a path to a cache file, return a blkid cache object reference. This reference is of type
-C<Device::Blkid::E2fsprogs::Cache>. As with other calls which allocate any object types, this call
-throws en exception on failure..
+C<Device::Blkid::E2fsprogs::Cache>. As with other calls which allocate object types, this call
+throws an exception on failure.
 
 C<v1.33>
 
@@ -293,12 +286,10 @@ This function places a search filter on the specified device iterator based upon
 in on the final two arguments of the function. After this function has been called on the given iterator
 with a type and value argument, the iterator will only return onjects which match the specified criteria.
 Please note, the $type argument can also contain any valid blkid entity category, such as a LABEL or UUID
-tag for example.
+tag. A successful call returns a copy of the device iterator object being used, undef on fail.
 
   # Set iterator to filter and match only on ext4 file systems
   dev_set_search($dev_iter, 'TYPE', 'ext4');
-
-A successful call returns a copy of the device iterator object being used, undef on fail.
 
 C<v1.38>
 
@@ -319,6 +310,9 @@ C<v1.33>
 =item C<devno_to_devname($devno)>
 
 Given a device number, returns the associated device name (e.g., /dev/sda1) or undef if no match found.
+
+  my $devno   = ( $major_devnum << 8 ) + minor_devnum;
+  my $devname = devno_to_devname($devno); 
 
 C<v1.33>
 
@@ -435,8 +429,8 @@ found, undef on failure.
 
 =item C<parse_tag_string()>
 
-Given an tag pair input value in C<type=value> format, returns a hash reference to a hash containing the
-two constituent elements as key values. Returns undef in the event of a failure.
+Given an tag pair input value in C<type=value> format, returns a hash reference containing the two
+constituent values as they are associated with the input keys. Returns undef in the event of a failure.
 
   { type => 'LABEL', value => '/boot' }
 
@@ -501,12 +495,12 @@ Test scripts; handle multiple version targets.
 I would like to thank Bastian Friedrich for his L<Device::Blkid>. Given the scant supply
 of documentation available on libblkid, especially the older, e2fsprogs-based versions,
 his POD proved quite helpful as a source of documentation on the library and saved me a
-load of time.  Thanks!
+load of time while running my test C calls. Thanks!
 
 Thanks to David Cantrell, David Golden and Yasuhiro Matsumoto for L<Devel::CheckLib>. I
 hacked it up a little bit to manage my dynamic version checks and build, hope you don't mind.
 
-Thanks to Tom Erskine for your insight and experience in all things Perl.
+Thanks to Tom Erskine for your invaluable insight and experience in all things Perl.
 
 I would also like to thank Larry McInnis for the loan of some hardware on which to develop
 this module. Most everything I have had been tied up and developing on the latest and greatest
