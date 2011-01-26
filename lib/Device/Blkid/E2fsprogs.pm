@@ -1,6 +1,6 @@
 package Device::Blkid::E2fsprogs;
 
-our $VERSION = '0.40';
+our $VERSION = '0.42';
 
 use 5.008000;
 use strict;
@@ -178,7 +178,7 @@ in running the F<Makefile.PL> or in running make against the resulting F<Makefil
 F<Makefile.PL> for hints on troubleshooting. If you wish to report any problems with this version
 detection, please include any output from the installation process as well as a copy of your
 F</usr/include/blkid/blkid.h> file. Finally, in cases where you are running version 1.34 or 1.35,
-and where you require inclusion of the L</known_fstype()> function in your build, you will be
+and where you require inclusion of the L</known_fstype> function in your build, you will be
 required to modify the F<Makefile.PL> to achieve this end.
 
 For additional details regarding dynamic library version detection, please refer to the
@@ -238,9 +238,9 @@ with the older library.
 
 =item C<put_cache($cache)>
 
-Write any changes to the blkid cache file and explicitly free associated resources. L</put_cache()>
+Write any changes to the blkid cache file and explicitly free associated resources. L</put_cache>
 should be called after you have been doing any work with a cache object. Note, the cache object is freed
-by this call and as such must not be used by any subsequent operations. Further calls to L</put_cache()>
+by this call and as such must not be used by any subsequent operations. Further calls to L</put_cache>
 on an already deallocated cache structure result in a segfault from the libblkid library so take guard
 against this.
 
@@ -441,7 +441,7 @@ C<v1.36>
 =item C<get_library_version()>
 
 Returns a hash reference containing the libblkid library version and release date as well as a raw integer
-representation of the standard dotted-decimal formatted version string (see L</parse_version_string()> above).
+representation of the standard dotted-decimal formatted version string (see L</parse_version_string> above).
 Returns undef on failure.
 
   { version => '1.41.4', date => '27-Jan-2009', raw => '1414' }  
@@ -452,11 +452,13 @@ C<v1.36>
 
 =head1 SEE ALSO
 
+L<perl(1)>
+
 L<E2fsprogs project home page|http://e2fsprogs.sourceforge.net/>
 
 L<blkid(8)>
 
-L<PerlXS|http://perldoc.perl.org/perlxs.html>
+L<Perl XS|http://perldoc.perl.org/perlxs.html>
 
 L<Device::Blkid> - You should probably use this unless otherwise constrained.
 
@@ -481,7 +483,7 @@ of Perl 5 you may have available.
 
 Eliminating redundant calls and implement a more Perlish feel.
 
-Implement L</devno_to_devname()> with a variadic parameter list so that it will accept
+Implement L</devno_to_devname> with a variadic parameter list so that it will accept
 both a devno and major/minor parameter list.
 
 Test scripts; handle multiple version targets so that additional unit tests can be written
