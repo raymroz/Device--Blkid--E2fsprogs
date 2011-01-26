@@ -1,4 +1,4 @@
-Device::Blkid::E2fsprogs version 0.36
+Device::Blkid::E2fsprogs version 0.40
 =====================================
 
 NOTE: This extension only supports the older e2fsprogs versions of libblkid (numbered 1.xx.x)
@@ -19,7 +19,7 @@ util-linux-ng versions of libblkid maintain their default cache file at /etc/blk
 This version has been implemented somewhat differently than Bastian's util-linux-ng build
 of the library. He opted to keep much of his logic and processing in XSUB, mine is done
 mostly in C; I have only used XSUB for my straight glue, everything else I kept in C. This is
-not to be taken as any opinion of statement on PerlXS/XSUB, its merely a reflection of my own
+not to be taken as any opinion of statement on XSUB, its merely a reflection of my own
 background and tastes.
 
 This package provides a Perl interface to the e2fsprogs-based versions of libblkid. It does not
@@ -93,7 +93,7 @@ To install and begin dynamic version detection:
 ===== libblkid version detection =====
 
 I have made use of a customized Devel::CheckLib module and Makefile.PL in an attempt to detect
-the version of libblkid currently installed on the target system and to then generate a PerlXS
+the version of libblkid currently installed on the target system and to then generate a Perl XS
 interface which directly targets and matches the API interface of that libblkid version.
 
 This process is expected to work on all versions of libblkid later than v1.35. In the event that

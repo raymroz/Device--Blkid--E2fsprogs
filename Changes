@@ -105,3 +105,14 @@ Revision history for Perl extension Device::Blkid::E2fsprogs.
         - Removed debug build information from README, POD
         - Removed DEBUG define from Makefile.PL
         - Version bumped to 0.36
+
+0.38 Tue Jan 25 11:16:22 AST 2011
+        - Removed keyboard artifacts from POD in E2fsprogs.pm
+        - Bumped version to 0.38
+
+0.40 Wed Jan 26 01:21:04 AST 2011
+        - Added assert() macros to E2fsprogs.xs on all input arguments
+        - Updated Makefile.PL with NDEBUG define arg to gcc; assert macro's
+          are not compiled by default
+        - Additional POD cleanup in E2fsprogs.pm
+        - Version bump to 0.40
