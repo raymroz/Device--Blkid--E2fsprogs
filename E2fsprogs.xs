@@ -5,7 +5,7 @@
  * E2fsprogs.xs
  * December 2010
  *
- * Version: 0.36
+ * Version: 0.40
  */
 
 
@@ -39,7 +39,7 @@ typedef struct blkid_struct_dev_iterate *DevIter;
  *
  * VERSION 1.33
  *
- * - 17 API calls (original release)
+ * - 17 total calls (original release)
  *
  */
 
@@ -47,6 +47,8 @@ typedef struct blkid_struct_dev_iterate *DevIter;
 /* extern void blkid_put_cache(blkid_cache cache) */
 void _blkid_put_cache(Cache cache)
 {
+    assert(cache);
+    
     blkid_put_cache(cache);
 }
 
@@ -55,6 +57,8 @@ Cache _blkid_get_cache(const char *filename)
 {    
     Cache cache;
 
+    assert(filename);
+    
     if ( blkid_get_cache( &cache, filename ) )
         croak("Error retrieving cache object: %s\n", strerror(errno));
 
@@ -66,6 +70,8 @@ const char *_blkid_dev_devname(Device device)
 {
     const char *devname = NULL;
 
+    assert(device);
+    
     devname = blkid_dev_devname(device);
     if (devname == NULL)
         return NULL;
@@ -77,6 +83,9 @@ const char *_blkid_dev_devname(Device device)
 DevIter _blkid_dev_iterate_begin(Cache cache)
 {
     DevIter iter = NULL;
+
+    assert(cache);
+
     iter = blkid_dev_iterate_begin(cache);
     if (iter == NULL)
         croak("Error retrieving device iterator object: %s\n", strerror(errno));
@@ -89,6 +98,8 @@ Device _blkid_dev_next(DevIter iter)
 {
     Device device = NULL;
 
+    assert(iter);
+    
     if ( blkid_dev_next(iter, &device) != 0 )
         return NULL;
 
@@ -98,18 +109,24 @@ Device _blkid_dev_next(DevIter iter)
 /* extern void blkid_iterate_end(blkid_iterate iterate) */
 void _blkid_dev_iterate_end(DevIter iter)
 {
+    assert(iter);
+    
     blkid_dev_iterate_end(iter);
 }
 
 /* extern char *blkid_devno_to_devname(dev_t devno) */
 char *_blkid_devno_to_devname(dev_t devno)
 {
+    assert(devno);
+    
     return blkid_devno_to_devname(devno);
 }
 
 /* extern int blkid_probe_all(blkid_cache cache) */
 Cache _blkid_probe_all(Cache cache)
 {
+    assert(cache);
+    
     if ( blkid_probe_all(cache) != 0 )
         return NULL;
     else
@@ -122,6 +139,10 @@ Device _blkid_get_dev(Cache cache, const char *devname, int flags)
 {
     Device device = NULL;
 
+    assert(cache);
+    assert(devname);
+    assert(flags);
+    
     device = blkid_get_dev(cache, devname, flags);
     if (device == NULL)
         croak("Error retrieving device object: %s\n", strerror(errno));
@@ -137,6 +158,8 @@ SV *_blkid_get_dev_size(const char *devname)
     IV iv_size  = 0;
     SV *sv_size = NULL;
 
+    assert(devname);
+    
     fd = open(devname, O_RDONLY);
     if (fd == -1)
         croak("File descriptor allocation : %s", strerror(errno));
@@ -157,9 +180,13 @@ SV *_blkid_get_dev_size(const char *devname)
 
 /* extern char *blkid_get_tag_value(blkid_cache cache, const char *tagname, const char *devname) */
 char *_blkid_get_tag_value(Cache cache, const char *tagname, const char *devname)
-{
+{   
     char *tag_value = NULL;
 
+    assert(cache);
+    assert(tagname);
+    assert(devname);
+    
     tag_value = blkid_get_tag_value(cache, tagname, devname);
     if (tag_value == NULL)
         return NULL;
@@ -172,6 +199,10 @@ char *_blkid_get_devname(Cache cache, const char *token, const char *value)
 {
     char *devname = NULL;
 
+    assert(cache);
+    assert(token);
+    assert(value);
+    
     devname = blkid_get_devname(cache, token, value);
     if (devname == NULL)
         return NULL;
@@ -184,6 +215,8 @@ TagIter _blkid_tag_iterate_begin(Device device)
 {
     TagIter iter = NULL;
 
+    assert(device);
+    
     iter = blkid_tag_iterate_begin(device);
     if (iter == NULL)
         croak("Error retrieving tag iterator object: %s\n", strerror(errno));
@@ -200,6 +233,8 @@ HV *_blkid_tag_next(TagIter iter)
     HV *tag_hash      = NULL;
     SV *sv_type       = NULL;
     SV *sv_value      = NULL;
+
+    assert(iter);
     
     rc = blkid_tag_next(iter, &type, &value);
     if ( type && value && (rc == 0) )
@@ -220,6 +255,8 @@ HV *_blkid_tag_next(TagIter iter)
 /* extern void blkid_tag_iterate_end(blkid_iterate iterate) */
 void _blkid_tag_iterate_end(TagIter iter)
 {
+    assert(iter);
+    
     blkid_tag_iterate_end(iter);
 }
 
@@ -229,6 +266,10 @@ Device _blkid_find_dev_with_tag(Cache cache, const char *type, const char *value
 {
     Device device = NULL;
 
+    assert(cache);
+    assert(type);
+    assert(value);
+    
     device = blkid_find_dev_with_tag(cache, type, value);
     if (device == NULL)
         return NULL;
@@ -246,6 +287,8 @@ HV *_blkid_parse_tag_string(const char *token)
     SV *sv_type     = NULL;
     SV *sv_value    = NULL;
 
+    assert(token);
+    
     rc = blkid_parse_tag_string(token, &type, &value);
     if ( type && value && (rc == 0) )
     {
@@ -272,6 +315,8 @@ const char *_blkid_known_fstype(const char *fstype)
 {
     int rc = 0;
 
+    assert(fstype);
+    
     rc = blkid_known_fstype(fstype);
     if (rc == 0)
         return NULL;
@@ -284,7 +329,7 @@ const char *_blkid_known_fstype(const char *fstype)
  *
  * VERSION 1.36
  *
- * - 21 API calls
+ * - 21 total calls
  *
  */
 
@@ -294,6 +339,9 @@ Device _blkid_verify(Cache cache, Device device)
 {
     Device tmp_device = NULL;
 
+    assert(cache);
+    assert(device);
+    
     tmp_device = blkid_verify(cache, device);
     if (tmp_device == NULL)
         return NULL;
@@ -304,6 +352,8 @@ Device _blkid_verify(Cache cache, Device device)
 /* extern int blkid_parse_version_string(const char *ver_string) */
 int _blkid_parse_version_string(const char *ver_string)
 {
+    assert(ver_string);
+    
     return blkid_parse_version_string(ver_string);
 }
 
@@ -350,6 +400,10 @@ DevIter _blkid_dev_set_search(DevIter iter, char *search_type, char *search_valu
 {
     int rc = 0;
 
+    assert(iter);
+    assert(search_type);
+    assert(search_value);
+    
     rc = blkid_dev_set_search(iter, search_type, search_value);
     if (rc != 0)
         return NULL;
@@ -360,6 +414,8 @@ DevIter _blkid_dev_set_search(DevIter iter, char *search_type, char *search_valu
 /* extern int blkid_probe_all_new(blkid_cache cache) */
 Cache _blkid_probe_all_new(Cache cache)
 {
+    assert(cache);
+    
     if ( blkid_probe_all_new(cache) != 0 )
         return NULL;
     
@@ -370,6 +426,11 @@ Cache _blkid_probe_all_new(Cache cache)
 Device _blkid_dev_has_tag(Device device, const char *type, const char *value)
 {
     int rc = 0;
+
+    assert(device);
+    assert(type);
+    assert(value);
+    
     rc = blkid_dev_has_tag(device, type, value);
     if (rc == 0)
         return NULL;
@@ -390,6 +451,8 @@ Device _blkid_dev_has_tag(Device device, const char *type, const char *value)
 /* extern void blkid_gc_cache(blkid_cache cache) */
 void _blkid_gc_cache(Cache cache)
 {
+    assert(cache);
+    
     blkid_gc_cache(cache);
 }
 #endif /* __API_1_40 */

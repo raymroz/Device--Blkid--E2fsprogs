@@ -100,7 +100,11 @@ WriteMakefile(
     ),
     LIBS          => ['-lblkid'],
     NEEDS_LINKING => 1,
-    DEFINE    => "$api_define",
+    # NDEBUG is defined, assertion macros in xs file generate no code
+    # Uncomment this and comment the following to generate a DEBUG build
+    # which uses the assert macro. See assert(3) for more information. 
+    # DEFINE    => "$api_define",
+    DEFINE    => "-DNDEBUG $api_define",
     INC       => '-I.',
     LICENSE   => 'perl',
     EXE_FILES => [],
